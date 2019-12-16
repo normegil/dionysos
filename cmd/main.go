@@ -17,7 +17,7 @@ func main() {
 		IP:   net.ParseIP("0.0.0.0"),
 		Port: 8080,
 		Zone: "",
-	})
+	}, http.NewRouter())
 
 	<-stopHTTPServer
 

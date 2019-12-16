@@ -8,9 +8,9 @@ import (
 	"strconv"
 )
 
-func ListenAndServe(addr net.TCPAddr) http.Server {
+func ListenAndServe(addr net.TCPAddr, handler http.Handler) http.Server {
 	httpAddr := addr.IP.String() + ":" + strconv.Itoa(addr.Port)
-	srv := http.Server{Addr: httpAddr}
+	srv := http.Server{Addr: httpAddr, Handler: handler}
 
 	go func() {
 		if err := srv.ListenAndServe(); nil != err {

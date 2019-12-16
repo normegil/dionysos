@@ -16,7 +16,7 @@ func TestServer(t *testing.T) {
 	listeningIP := net.ParseIP("127.0.0.1")
 	tcpAddr := connectionutils.SelectPort(listeningIP, *interval.MustParseIntervalInteger("[18880;18890]"))
 
-	srv := internalHTTP.ListenAndServe(tcpAddr)
+	srv := internalHTTP.ListenAndServe(tcpAddr, http.DefaultServeMux)
 	defer func() {
 		ctx, _ := context.WithTimeout(context.Background(), 100*time.Millisecond)
 		if err := srv.Shutdown(ctx); nil != err {
