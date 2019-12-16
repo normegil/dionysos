@@ -3,18 +3,19 @@ package http
 import (
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"strconv"
 )
 
-func ListenAndServe() http.Server {
-	port := 8080
-	srv := http.Server{Addr: ":" + strconv.Itoa(port)}
+func ListenAndServe(addr net.TCPAddr) http.Server {
+	httpAddr := addr.IP.String() + ":" + strconv.Itoa(addr.Port)
+	srv := http.Server{Addr: httpAddr}
 
 	go func() {
 		if err := srv.ListenAndServe(); nil != err {
 			if http.ErrServerClosed != err {
-				log.Fatal(fmt.Errorf("listening on %d: %w", port, err))
+				log.Fatal(fmt.Errorf("listening on '%s': %w", httpAddr, err))
 			}
 		}
 	}()

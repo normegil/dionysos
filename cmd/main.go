@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/normegil/dionysos/internal/http"
+	"net"
 	"os"
 	"os/signal"
 	"time"
@@ -12,7 +13,11 @@ func main() {
 	stopHTTPServer := make(chan os.Signal, 1)
 	signal.Notify(stopHTTPServer, os.Interrupt)
 
-	srv := http.ListenAndServe()
+	srv := http.ListenAndServe(net.TCPAddr{
+		IP:   net.ParseIP("0.0.0.0"),
+		Port: 8080,
+		Zone: "",
+	})
 
 	<-stopHTTPServer
 
