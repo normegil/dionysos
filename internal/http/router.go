@@ -5,6 +5,10 @@ import (
 	"net/http"
 )
 
-func NewRouter() http.Handler {
-	return chi.NewRouter()
+func NewRouter(routes map[string]http.Handler) http.Handler {
+	rt := chi.NewRouter()
+	for pattern, handler := range routes {
+		rt.Mount(pattern, handler)
+	}
+	return rt
 }
