@@ -1,0 +1,6 @@
+= Dionysos
+
+Dionysos is a software designed to manage household stock of foods and other supply. It's designed to be flexible and easy to use.
+
+== Installation
+== Configuration
