@@ -23,7 +23,8 @@ func main() {
 	rt := internalHTTP.NewRouter(newRoutes())
 	closeHttpServer := internalHTTP.ListenAndServe(addr, rt)
 	defer func() {
-		ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
 		if err := closeHttpServer(ctx); nil != err {
 			panic(err)
 		}

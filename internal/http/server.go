@@ -14,6 +14,7 @@ func ListenAndServe(addr net.TCPAddr, handler http.Handler) func(ctx context.Con
 	srv := http.Server{Addr: httpAddr, Handler: handler}
 
 	go func() {
+		log.Printf("listening on %s", httpAddr)
 		if err := srv.ListenAndServe(); nil != err {
 			if http.ErrServerClosed != err {
 				log.Fatal(fmt.Errorf("listening on '%s': %w", httpAddr, err))
