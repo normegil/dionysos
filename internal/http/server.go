@@ -3,7 +3,7 @@ package http
 import (
 	"context"
 	"fmt"
-	"log"
+	"github.com/rs/zerolog/log"
 	"net"
 	"net/http"
 	"strconv"
@@ -14,10 +14,10 @@ func ListenAndServe(addr net.TCPAddr, handler http.Handler) func(ctx context.Con
 	srv := http.Server{Addr: httpAddr, Handler: handler}
 
 	go func() {
-		log.Printf("listening on %s", httpAddr)
+		log.Info().Str("address", srv.Addr).Msg("HTTP Server listening")
 		if err := srv.ListenAndServe(); nil != err {
 			if http.ErrServerClosed != err {
-				log.Fatal(fmt.Errorf("listening on '%s': %w", httpAddr, err))
+				log.Fatal().Err(err).Str("address", srv.Addr).Msg("HTTP Server listening failed")
 			}
 		}
 	}()

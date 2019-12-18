@@ -5,6 +5,8 @@ import (
 	"github.com/markbates/pkger"
 	internalHTTP "github.com/normegil/dionysos/internal/http"
 	"github.com/normegil/dionysos/internal/http/api"
+	logCfg "github.com/normegil/dionysos/internal/log"
+	"github.com/rs/zerolog/log"
 	"net"
 	"net/http"
 	"os"
@@ -13,6 +15,8 @@ import (
 )
 
 func main() {
+	logCfg.Configure()
+
 	stopHTTPServer := make(chan os.Signal, 1)
 	signal.Notify(stopHTTPServer, os.Interrupt)
 
@@ -27,7 +31,7 @@ func main() {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		if err := closeHttpServer(ctx); nil != err {
-			panic(err)
+			log.Fatal().Err(err).Msg("Close server failed")
 		}
 	}()
 
