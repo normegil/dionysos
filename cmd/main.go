@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/markbates/pkger"
 	internalHTTP "github.com/normegil/dionysos/internal/http"
 	"github.com/normegil/dionysos/internal/http/api"
 	"net"
@@ -20,8 +21,12 @@ func main() {
 		Port: 8080,
 		Zone: "",
 	}
-	rt := internalHTTP.NewRouter(newRoutes())
-	closeHttpServer := internalHTTP.ListenAndServe(addr, rt)
+	internalHTTP.NewRouter(newRoutes())
+
+	router := http.NewServeMux()
+	router.Handle("/api/", http.StripPrefix("/api/", http.FileServer(pkger.Dir("/api"))))
+
+	closeHttpServer := internalHTTP.ListenAndServe(addr, router)
 	defer func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
