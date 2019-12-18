@@ -1,0 +1,34 @@
+openapi: 3.0.0
+info:
+  title: Dionysos
+  description: Dionysos is a software designed to manage household stock of foods and other supply.
+  version: 0.0.1
+servers:
+  - url: http://localhost:8080/api
+    description: Localhost test server
+paths:
+  /items:
+    get:
+      summary: Returns a list of defined items.
+      responses:
+        '200':    # status code
+          description: A JSON object containing items and query infos
+          content:
+            application/json:
+              schema:
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Item'
+components:
+  schemas:
+    Item:
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+      required:
+        - id
+        - name
