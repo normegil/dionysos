@@ -21,12 +21,8 @@ func main() {
 		Port: 8080,
 		Zone: "",
 	}
-	internalHTTP.NewRouter(newRoutes())
-
-	router := http.NewServeMux()
-	router.Handle("/api/", http.StripPrefix("/api/", http.FileServer(pkger.Dir("/api"))))
-
-	closeHttpServer := internalHTTP.ListenAndServe(addr, router)
+	rt := internalHTTP.NewRouter(newRoutes())
+	closeHttpServer := internalHTTP.ListenAndServe(addr, rt)
 	defer func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
@@ -41,5 +37,6 @@ func main() {
 func newRoutes() map[string]http.Handler {
 	routes := make(map[string]http.Handler)
 	routes["/api"] = api.NewRouter()
+	routes["/"] = http.FileServer(pkger.Dir("/website"))
 	return routes
 }
