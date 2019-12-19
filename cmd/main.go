@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/markbates/pkger"
+	"github.com/normegil/dionysos/internal/configuration"
 	internalHTTP "github.com/normegil/dionysos/internal/http"
 	"github.com/normegil/dionysos/internal/http/api"
 	logCfg "github.com/normegil/dionysos/internal/log"
@@ -15,14 +16,19 @@ import (
 )
 
 func main() {
+	cfg, err := configuration.NewConfiguration()
+	if err != nil {
+		log.Fatal().Err(err).Msg("loading configuration")
+	}
+
 	logCfg.Configure()
 
 	stopHTTPServer := make(chan os.Signal, 1)
 	signal.Notify(stopHTTPServer, os.Interrupt)
 
 	addr := net.TCPAddr{
-		IP:   net.ParseIP("0.0.0.0"),
-		Port: 8080,
+		IP:   net.ParseIP(cfg.GetString(configuration.KeyAddress.String())),
+		Port: cfg.GetInt(configuration.KeyPort.String()),
 		Zone: "",
 	}
 	rt := internalHTTP.NewRouter(newRoutes())
@@ -31,7 +37,7 @@ func main() {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		if err := closeHttpServer(ctx); nil != err {
-			log.Fatal().Err(err).Msg("Close server failed")
+			log.Fatal().Err(err).Msg("closing server failed")
 		}
 	}()
 
