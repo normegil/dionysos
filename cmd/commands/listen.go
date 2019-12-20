@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"fmt"
 	"github.com/markbates/pkger"
 	"github.com/normegil/dionysos/internal/configuration"
 	internalHTTP "github.com/normegil/dionysos/internal/http"
@@ -16,47 +17,49 @@ import (
 	"time"
 )
 
-func init() {
-	RootCmd.AddCommand(listenCmd)
+func listen() (*cobra.Command, error) {
+	listenCmd := &cobra.Command{
+		Use:   "listen",
+		Short: "Launch dionysos server",
+		Long:  `Launch dionysos server`,
+		Run:   listenRun,
+	}
 
 	addressKey := configuration.KeyAddress
 	listenCmd.Flags().StringP(addressKey.CommandLine.Name, addressKey.CommandLine.Shorthand, "0.0.0.0", addressKey.Description)
 	if err := viper.BindPFlag(addressKey.Name, listenCmd.Flags().Lookup(addressKey.CommandLine.Name)); err != nil {
-		log.Fatal().Err(err).Str("paramName", addressKey.Name).Msg("Binding parameter")
+		return nil, fmt.Errorf("binding parameter %s: %w", addressKey.Name, err)
 	}
 
 	portKey := configuration.KeyPort
 	listenCmd.Flags().IntP(portKey.CommandLine.Name, portKey.CommandLine.Shorthand, 8080, portKey.Description)
 	if err := viper.BindPFlag(portKey.Name, listenCmd.Flags().Lookup(portKey.CommandLine.Name)); err != nil {
-		log.Fatal().Err(err).Str("paramName", portKey.Name).Msg("Binding parameter")
+		return nil, fmt.Errorf("binding parameter %s: %w", portKey.Name, err)
 	}
+
+	return listenCmd, nil
 }
 
-var listenCmd = &cobra.Command{
-	Use:   "listen",
-	Short: "Launch dionysos server",
-	Long:  `Launch dionysos server`,
-	Run: func(cmd *cobra.Command, args []string) {
-		stopHTTPServer := make(chan os.Signal, 1)
-		signal.Notify(stopHTTPServer, os.Interrupt)
+func listenRun(_ *cobra.Command, _ []string) {
+	stopHTTPServer := make(chan os.Signal, 1)
+	signal.Notify(stopHTTPServer, os.Interrupt)
 
-		addr := net.TCPAddr{
-			IP:   net.ParseIP(viper.GetString(configuration.KeyAddress.Name)),
-			Port: viper.GetInt(configuration.KeyPort.Name),
-			Zone: "",
+	addr := net.TCPAddr{
+		IP:   net.ParseIP(viper.GetString(configuration.KeyAddress.Name)),
+		Port: viper.GetInt(configuration.KeyPort.Name),
+		Zone: "",
+	}
+	rt := internalHTTP.NewRouter(newRoutes())
+	closeHttpServer := internalHTTP.ListenAndServe(addr, rt)
+	defer func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := closeHttpServer(ctx); nil != err {
+			log.Fatal().Err(err).Msg("closing server failed")
 		}
-		rt := internalHTTP.NewRouter(newRoutes())
-		closeHttpServer := internalHTTP.ListenAndServe(addr, rt)
-		defer func() {
-			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-			defer cancel()
-			if err := closeHttpServer(ctx); nil != err {
-				log.Fatal().Err(err).Msg("closing server failed")
-			}
-		}()
+	}()
 
-		<-stopHTTPServer
-	},
+	<-stopHTTPServer
 }
 
 func newRoutes() map[string]http.Handler {

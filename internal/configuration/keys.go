@@ -11,6 +11,7 @@ type Key struct {
 	CommandLine CommandLineOption
 }
 
+//nolint:gochecknoglobals // Const keys used as enums are acceptable
 var (
 	KeyColorizedLogging = Key{
 		Name:        "log.color",
