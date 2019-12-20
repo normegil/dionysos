@@ -6,7 +6,12 @@ import (
 	"os"
 )
 
-func Configure() {
+func Init() {
 	log.Logger = zerolog.New(os.Stdout).With().Timestamp().Logger()
-	log.Logger = log.Logger.Output(zerolog.ConsoleWriter{Out: os.Stdout})
+}
+
+func Configure(colored bool) {
+	if colored {
+		log.Logger = log.Logger.Output(zerolog.ConsoleWriter{Out: os.Stdout})
+	}
 }

@@ -1,12 +1,38 @@
 package configuration
 
-type Key string
-
-const (
-	KeyAddress Key = "address"
-	KeyPort    Key = "port"
-)
-
-func (k Key) String() string {
-	return string(k)
+type CommandLineOption struct {
+	Shorthand string
+	Name      string
 }
+
+type Key struct {
+	Name        string
+	Description string
+	CommandLine CommandLineOption
+}
+
+var (
+	KeyColorizedLogging = Key{
+		Name:        "log.color",
+		Description: "Formatted & colorized logging on stdout",
+		CommandLine: CommandLineOption{
+			Name: "color",
+		},
+	}
+	KeyAddress = Key{
+		Name:        "server.address",
+		Description: "address to listen to.",
+		CommandLine: CommandLineOption{
+			Shorthand: "a",
+			Name:      "address",
+		},
+	}
+	KeyPort = Key{
+		Name:        "server.port",
+		Description: "port to listen to.",
+		CommandLine: CommandLineOption{
+			Shorthand: "p",
+			Name:      "port",
+		},
+	}
+)
