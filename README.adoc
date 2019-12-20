@@ -3,4 +3,55 @@
 Dionysos is a software designed to manage household stock of foods and other supply. It's designed to be flexible and easy to use.
 
 == Installation
+== Usage
+The application define several sub-commands, which can be listed and describes using `dionysos help`. Here is a small description of those commands:
+
+* `dionysos listen`: launch the server.
+
 == Configuration
+The application can be configured using several methods, with a priority order:
+
+. *Command line:* You can get help on available options using `dionysos [command] --help`.
+. *Environment variables:* Prefixed with `DIONYSOS_`.
+. *File:* A file named `dionysos.yml` will be searched in those folders:
+.. `/etc/dionysos`
+.. `$XDG_CONFIG_HOME/dionysos`
+.. `$HOME/.dionysos`
+.. Current/Working directory
+. *Default value:* Check the tables below.
+
+See below for more details on available options.
+
+.Common parameters
+|===
+|Command line |Environment Variable |File |Default value |Description
+
+|--config _path_
+|
+|
+| See _Configuration_ section
+| Alternative path for configuration file
+
+|--color
+|DIONYSOS_LOG_COLOR
+|log.color
+|false
+|Nicely formatted and colored logging output. Targeted for development environment.
+|===
+
+.`listen` command parameters
+|===
+|Command line |Environment Variable |File |Default value |Description
+
+|--address, -a _address_
+|DIONYSOS_SERVER_ADDRESS
+|server.address
+| 0.0.0.0
+| Address used by the server to listen to incoming connections
+
+|--port, -p _port_
+|DIONYSOS_SERVER_PORT
+|server.port
+| 8080
+| Port used by the server to listen to incoming connections
+|===
