@@ -20,10 +20,12 @@ func (h HTTPErrorHandler) Handle(w http.ResponseWriter, err error) {
 		}
 	}
 	resp := httpError.toResponse()
+	resp.Error = err.Error()
 	bytes, marshalErr := json.Marshal(resp)
 	if marshalErr != nil {
 		log.Error().Err(marshalErr).Interface("HTTPError", resp).Msg("Could not marshal HTTPError")
 	}
+	w.WriteHeader(resp.Status)
 	if _, writeErr := w.Write(bytes); nil != writeErr {
 		log.Error().Err(writeErr).Interface("HTTPError", resp).Msg("Could not write response with HTTPError")
 	}

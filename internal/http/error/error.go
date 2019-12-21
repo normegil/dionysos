@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-type errorResponse struct {
+type ErrorResponse struct {
 	Code   int       `json:"code"`
 	Status int       `json:"status"`
 	Error  string    `json:"error"`
@@ -21,8 +21,8 @@ func (e HTTPError) Error() string {
 	return e.Err.Error()
 }
 
-func (e HTTPError) toResponse() errorResponse {
-	return errorResponse{
+func (e HTTPError) toResponse() ErrorResponse {
+	return ErrorResponse{
 		Code:   e.Code,
 		Status: e.Status,
 		Error:  e.Err.Error(),
