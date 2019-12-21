@@ -7,6 +7,7 @@ import (
 	"github.com/normegil/dionysos/internal/configuration"
 	internalHTTP "github.com/normegil/dionysos/internal/http"
 	"github.com/normegil/dionysos/internal/http/api"
+	error2 "github.com/normegil/dionysos/internal/http/error"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -64,7 +65,7 @@ func listenRun(_ *cobra.Command, _ []string) {
 
 func newRoutes() map[string]http.Handler {
 	routes := make(map[string]http.Handler)
-	routes["/api"] = api.NewRouter()
+	routes["/api"] = api.Controller{ErrHandler: error2.HTTPErrorHandler{}}.Routes()
 	routes["/"] = http.FileServer(pkger.Dir("/website"))
 	return routes
 }

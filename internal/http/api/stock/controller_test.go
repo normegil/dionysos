@@ -6,6 +6,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/normegil/dionysos"
 	"github.com/normegil/dionysos/internal/http/api/stock"
+	error2 "github.com/normegil/dionysos/internal/http/error"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -15,11 +16,11 @@ import (
 
 func TestController(t *testing.T) {
 	rt := chi.NewRouter()
-	rt.Mount("/api/items", stock.NewController())
+	rt.Mount("/api/items", stock.Controller{ErrHandler: error2.HTTPErrorHandler{}}.Routes())
 	srv := httptest.NewServer(rt)
 	defer srv.Close()
 
-	t.Run("LoadAll", func(t *testing.T) {
+	t.Run("loadAll", func(t *testing.T) {
 		resp, err := http.Get(fmt.Sprintf("%s/api/items", srv.URL))
 		if err != nil {
 			t.Fatal(err)

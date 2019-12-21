@@ -2,33 +2,29 @@ package error
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/rs/zerolog/log"
 	"net/http"
-	"time"
 )
 
-type ReturningErrorHandler interface {
-	ServeHTTP(http.ResponseWriter, *http.Request) error
-}
-
 type HTTPErrorHandler struct {
-	handler ReturningErrorHandler
 }
 
-func (h HTTPErrorHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if err := h.handler.ServeHTTP(w, r); nil != err {
-		httpError := HTTPError{
-			Code:   500,
-			Status: 5000,
-			Error:  err.Error(),
-			Time:   time.Now(),
+func (h HTTPErrorHandler) Handle(w http.ResponseWriter, err error) {
+	httpError := &HTTPError{}
+	if !errors.As(err, httpError) {
+		httpError = &HTTPError{
+			Code:   50000,
+			Status: http.StatusInternalServerError,
+			Err:    err,
 		}
-		bytes, marshalErr := json.Marshal(httpError)
-		if marshalErr != nil {
-			log.Error().Err(marshalErr).Interface("HTTPError", httpError).Msg("Could not marshal HTTPError")
-		}
-		if _, writeErr := w.Write(bytes); nil != writeErr {
-			log.Error().Err(writeErr).Interface("HTTPError", httpError).Msg("Could not write response with HTTPError")
-		}
+	}
+	resp := httpError.toResponse()
+	bytes, marshalErr := json.Marshal(resp)
+	if marshalErr != nil {
+		log.Error().Err(marshalErr).Interface("HTTPError", resp).Msg("Could not marshal HTTPError")
+	}
+	if _, writeErr := w.Write(bytes); nil != writeErr {
+		log.Error().Err(writeErr).Interface("HTTPError", resp).Msg("Could not write response with HTTPError")
 	}
 }
