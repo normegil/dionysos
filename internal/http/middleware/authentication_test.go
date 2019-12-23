@@ -62,7 +62,6 @@ func TestAuthenticationHandler(t *testing.T) {
 						w.WriteHeader(http.StatusUnauthorized)
 					}
 					w.WriteHeader(http.StatusOK)
-					return
 				}),
 			}
 
