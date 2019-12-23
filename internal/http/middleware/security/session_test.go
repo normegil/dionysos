@@ -1,3 +1,4 @@
+//nolint:funlen // There is no sense in limiting the size of a test function
 package security_test
 
 import (
