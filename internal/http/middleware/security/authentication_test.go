@@ -1,10 +1,10 @@
 //nolint:funlen // There is no sense in limiting the size of a test function
-package middleware_test
+package security_test
 
 import (
 	httperror "github.com/normegil/dionysos/internal/http/error"
-	"github.com/normegil/dionysos/internal/http/middleware"
-	"github.com/normegil/dionysos/internal/security"
+	"github.com/normegil/dionysos/internal/http/middleware/security"
+	security2 "github.com/normegil/dionysos/internal/security"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -46,9 +46,9 @@ func TestAuthenticationHandler(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			handler := middleware.AuthenticationHandler{
+			handler := security.AuthenticationHandler{
 				ErrorHandler: httperror.HTTPErrorHandler{},
-				Authenticator: security.MemoryAuthenticator{
+				Authenticator: security2.MemoryAuthenticator{
 					Username: "user",
 					Password: "pass",
 				},
@@ -57,7 +57,7 @@ func TestAuthenticationHandler(t *testing.T) {
 						w.WriteHeader(http.StatusOK)
 						return
 					}
-					user := r.Context().Value(middleware.KeyUser)
+					user := r.Context().Value(security.KeyUser)
 					if nil == user {
 						w.WriteHeader(http.StatusUnauthorized)
 					}
