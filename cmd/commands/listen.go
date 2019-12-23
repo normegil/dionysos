@@ -8,6 +8,7 @@ import (
 	internalHTTP "github.com/normegil/dionysos/internal/http"
 	"github.com/normegil/dionysos/internal/http/api"
 	error2 "github.com/normegil/dionysos/internal/http/error"
+	"github.com/normegil/dionysos/internal/http/middleware"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -50,8 +51,9 @@ func listenRun(_ *cobra.Command, _ []string) {
 		Port: viper.GetInt(configuration.KeyPort.Name),
 		Zone: "",
 	}
-	rt := internalHTTP.NewRouter(newRoutes())
-	closeHttpServer := internalHTTP.ListenAndServe(addr, rt)
+	router := internalHTTP.NewRouter(newRoutes())
+	handler := middleware.RequestLogger{Handler: router}
+	closeHttpServer := internalHTTP.ListenAndServe(addr, handler)
 	defer func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
