@@ -2,135 +2,82 @@
 package security_test
 
 import (
-	"context"
+	"fmt"
+	"github.com/alexedwards/scs/v2"
 	httperror "github.com/normegil/dionysos/internal/http/error"
 	"github.com/normegil/dionysos/internal/http/middleware/security"
-	security2 "github.com/normegil/dionysos/internal/security"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
-	"time"
 )
 
 func TestSessionHandler(t *testing.T) {
 	tests := []struct {
-		name                   string
-		user                   string
-		addCookieToManager     bool
-		sessionIDCookie        string
-		authenticationRequired bool
-		sessionIDCreated       bool
-		expected               int
+		name           string
+		preinitialized bool
 	}{
 		{
-			name:                   "Authentication with user",
-			user:                   "test",
-			authenticationRequired: true,
-			sessionIDCreated:       true,
-			expected:               http.StatusOK,
-		},
-		{
-			name:                   "Authentication with session",
-			addCookieToManager:     true,
-			sessionIDCookie:        "sessID",
-			authenticationRequired: true,
-			sessionIDCreated:       false,
-			expected:               http.StatusOK,
-		},
-		{
-			name:                   "Authentication with user - session cookie attached",
-			user:                   "test",
-			addCookieToManager:     true,
-			sessionIDCookie:        "sessID",
-			authenticationRequired: true,
-			sessionIDCreated:       true,
-			expected:               http.StatusOK,
-		},
-		{
-			name:                   "Authentication - No data",
-			authenticationRequired: true,
-			sessionIDCreated:       false,
-			expected:               http.StatusUnauthorized,
-		},
-		{
-			name:                   "Authentication - No data - Not required",
-			authenticationRequired: false,
-			sessionIDCreated:       false,
-			expected:               http.StatusOK,
+			name: "Base",
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			sessionManager := security2.NewMemorySessionManager()
+			manager := scs.New()
 			handler := security.SessionHandler{
-				ErrHandler:        httperror.HTTPErrorHandler{},
-				SessionTimeToLive: 1 * time.Second,
-				SessionManager:    sessionManager,
+				SessionManager: manager,
+				ErrHandler:     httperror.HTTPErrorHandler{},
 				Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					if !test.authenticationRequired {
-						w.WriteHeader(http.StatusOK)
-						return
-					}
-					user := r.Context().Value(security.KeyUser)
-					if nil == user {
-						w.WriteHeader(http.StatusUnauthorized)
-					}
 					w.WriteHeader(http.StatusOK)
 				}),
 			}
+
 			recorder := httptest.NewRecorder()
 			r := httptest.NewRequest("GET", "http://localhost:8080", strings.NewReader(""))
 
-			if "" != test.user {
-				r = r.WithContext(context.WithValue(r.Context(), security.KeyUser, test.user))
-			}
-
-			if "" != test.sessionIDCookie {
-				if test.addCookieToManager {
-					sessionManager.TestSetSession("test", test.sessionIDCookie)
-				}
-				r.AddCookie(&http.Cookie{
-					Name:  security.KeySessionID,
-					Value: test.sessionIDCookie,
-				})
-			}
-
 			handler.ServeHTTP(recorder, r)
 
-			resp := recorder.Result()
-			checkCookieExist(t, test.sessionIDCreated, recorder)
-			checkStatusCode(t, test.expected, resp)
+			cookieHeader := recorder.Header().Get("Set-Cookie")
+			_, err := asCookie(cookieHeader)
+			if err != nil {
+				t.Fatal(err)
+			}
 		})
 	}
 }
 
-func checkStatusCode(t *testing.T, expected int, resp *http.Response) {
-	if expected != resp.StatusCode {
-		t.Errorf("Wrong status code {expected:%d,got:%d}", expected, resp.StatusCode)
+func asCookie(cookieHeader string) (http.Cookie, error) {
+	splitted := strings.Split(cookieHeader, ";")
+	sessionToken := strings.Trim(splitted[0], " ")
+	sessionAndToken := strings.Split(sessionToken, "=")
+	if sessionAndToken[0] != "session" {
+		return http.Cookie{}, fmt.Errorf("header didn't parse as expected, got '%s' instead of '%s'", sessionAndToken[0], "session")
 	}
+	return http.Cookie{
+		Name:  sessionAndToken[0],
+		Value: sessionAndToken[1],
+	}, nil
 }
 
-func checkCookieExist(t *testing.T, shouldExist bool, recorder *httptest.ResponseRecorder) {
-	if shouldExist {
-		cookieID, _ := GetCookie(t, recorder)
-		if cookieID != security.KeySessionID {
-			t.Errorf("no cookie '%s' found", security.KeySessionID)
-			return
-		}
+func TestAuthenticatedUserSessionUpdater_RenewSessionOnAuthenticatedUser(t *testing.T) {
+	sessionManager := scs.New()
+	r := httptest.NewRequest("GET", "http://localhost:8080", strings.NewReader(""))
+	ctx, err := sessionManager.Load(r.Context(), "")
+	if err != nil {
+		t.Fatal(err)
 	}
-}
+	r = r.WithContext(ctx)
 
-func GetCookie(t *testing.T, recorder *httptest.ResponseRecorder) (string, string) {
-	cookieHeader := recorder.Header().Get("Set-Cookie")
-	if "" == cookieHeader {
-		t.Errorf("no cookie in response")
-		return "", ""
+	const expectedUsername = "testuser"
+	sessionUpdater := security.AuthenticatedUserSessionUpdater{SessionManager: sessionManager}
+	if err := sessionUpdater.RenewSessionOnAuthenticatedUser(r, expectedUsername); nil != err {
+		t.Fatal(err)
 	}
 
-	splittedCookieHeader := strings.Split(cookieHeader, ";")
-	cookieKeyVal := strings.Trim(splittedCookieHeader[0], " ")
-	keyVal := strings.Split(cookieKeyVal, "=")
-	return keyVal[0], keyVal[1]
+	user := sessionManager.GetString(r.Context(), "user")
+
+	if expectedUsername != user {
+		t.Errorf("Wrong username {expected:%s;got:%s}", expectedUsername, user)
+	}
 }
