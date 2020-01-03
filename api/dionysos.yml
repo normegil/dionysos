@@ -22,6 +22,8 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Item'
+        '500':
+          $ref: '#/components/responses/GenericError'
 components:
   schemas:
     Item:
@@ -34,3 +36,21 @@ components:
       required:
         - id
         - name
+    Error:
+      properties:
+        code:
+          type: integer
+        status:
+          type: integer
+        error:
+          type: string
+        time:
+          type: string
+          format: 'date-time'
+  responses:
+    GenericError:
+      description: Server error happened during processing. Check error message for more details.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
