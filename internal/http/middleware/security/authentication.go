@@ -9,6 +9,7 @@ import (
 )
 
 const KeyUser string = "authenticated-user"
+const AnonymousUser string = "anonymous"
 
 type Authenticator interface {
 	Authenticate(username string, password string) bool
@@ -44,6 +45,8 @@ func (a AuthenticationHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 				return
 			}
 		}
+	} else {
+		r = r.WithContext(context.WithValue(r.Context(), KeyUser, AnonymousUser))
 	}
 
 	a.Handler.ServeHTTP(w, r)
