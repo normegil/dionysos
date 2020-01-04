@@ -42,7 +42,6 @@ func (a AuthenticationHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 				Err:    errors.New("authentication failed: wrong user and/or password"),
 			})
 		}
-
 	}
 
 	a.Handler.ServeHTTP(w, r)
