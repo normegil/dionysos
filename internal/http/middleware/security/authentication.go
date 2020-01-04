@@ -25,28 +25,24 @@ type AuthenticationHandler struct {
 func (a AuthenticationHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	username, password, ok := r.BasicAuth()
 	if !ok {
-		a.ErrorHandler.Handle(w, httperror.HTTPError{
-			Code:   40100,
-			Status: http.StatusUnauthorized,
-			Err:    errors.New("authentication failed: header could not be parsed"),
-		})
-		return
-	}
-
-	if a.Authenticator.Authenticate(username, password) {
-		r = r.WithContext(context.WithValue(r.Context(), KeyUser, username))
-		if nil != a.OnAuthenticated {
-			if err := a.OnAuthenticated(username); nil != err {
-				a.ErrorHandler.Handle(w, httperror.HTTPError{
-					Code:   40100,
-					Status: http.StatusUnauthorized,
-					Err:    fmt.Errorf("authenticater user event error: %w", err),
-				})
-				return
-			}
-		}
-	} else {
 		r = r.WithContext(context.WithValue(r.Context(), KeyUser, AnonymousUser))
+	} else {
+		if a.Authenticator.Authenticate(username, password) {
+			r = r.WithContext(context.WithValue(r.Context(), KeyUser, username))
+			if nil != a.OnAuthenticated {
+				if err := a.OnAuthenticated(username); nil != err {
+					a.ErrorHandler.Handle(w, fmt.Errorf("authenticater user event error: %w", err))
+					return
+				}
+			}
+		} else {
+			a.ErrorHandler.Handle(w, httperror.HTTPError{
+				Code:   40100,
+				Status: http.StatusUnauthorized,
+				Err:    errors.New("authentication failed: wrong user and/or password"),
+			})
+		}
+
 	}
 
 	a.Handler.ServeHTTP(w, r)
