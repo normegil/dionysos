@@ -4,6 +4,9 @@ const VueLoaderPlugin = require('vue-loader/lib/plugin');
 module.exports = {
     entry: './src/index.ts',
     mode: 'development',
+    optimization: {
+        usedExports: true,
+    },
     output: {
         filename: 'bundle.js',
         path: path.resolve(__dirname, 'dist'),
@@ -27,7 +30,10 @@ module.exports = {
         ],
     },
     resolve: {
-        extensions: [ '.tsx', '.ts', '.js', '.vue' ],
+        extensions: ['.tsx', '.ts', '.js', '.vue'],
+        alias: {
+            vue$: "vue/dist/vue.runtime.esm.js",
+        }
     },
     plugins: [
         new VueLoaderPlugin()
