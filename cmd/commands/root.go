@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 	"github.com/normegil/dionysos/internal/configuration"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -13,6 +14,9 @@ func Root() (*cobra.Command, error) {
 		Short: "Dionysos is a software designed to manage household stock of foods and other supply.",
 		Long:  `Dionysos is a software designed to manage household stock of foods and other supply.`,
 		Run: func(cmd *cobra.Command, args []string) {
+			if err := cmd.Help(); nil != err {
+				log.Fatal().Err(err).Msg("could not print help message")
+			}
 		},
 	}
 

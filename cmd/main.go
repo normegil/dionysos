@@ -7,6 +7,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"os"
 	"strings"
 )
 
@@ -31,8 +32,8 @@ func initConfig() {
 		viper.SetConfigFile(cfgFile)
 	} else {
 		viper.AddConfigPath("/etc/dionysos")
-		viper.AddConfigPath("$XDG_CONFIG_HOME/dionysos")
-		viper.AddConfigPath("$HOME/.dionysos")
+		viper.AddConfigPath("$XDG_CONFIG_HOME" + string(os.PathSeparator) + "dionysos")
+		viper.AddConfigPath("$HOME" + string(os.PathSeparator) + ".dionysos")
 		viper.AddConfigPath(".")
 
 		viper.SetConfigType("yaml")

@@ -5,7 +5,8 @@
   "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack",
+    "build:prod": "webpack",
+    "build:dev": "webpack --env dev --progress --profile --colors",
     "lint": "eslint --max-warnings=0 --ext .js,.jsx,.vue,.ts,.tsx src"
   },
   "author": "Olivier Ory",

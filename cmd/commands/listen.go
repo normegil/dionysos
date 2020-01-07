@@ -68,6 +68,6 @@ func listenRun(_ *cobra.Command, _ []string) {
 func newRoutes() map[string]http.Handler {
 	routes := make(map[string]http.Handler)
 	routes["/api"] = api.Controller{ErrHandler: error2.HTTPErrorHandler{}}.Routes()
-	routes["/"] = http.FileServer(pkger.Dir("/website"))
+	routes["/"] = http.FileServer(pkger.Dir("/website/dist"))
 	return routes
 }
