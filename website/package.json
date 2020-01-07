@@ -20,7 +20,10 @@
     "@typescript-eslint/eslint-plugin": "^2.15.0",
     "@typescript-eslint/parser": "^2.15.0",
     "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.9.0",
+    "eslint-plugin-prettier": "^3.1.2",
     "eslint-plugin-vue": "^6.1.2",
+    "prettier": "1.19.1",
     "standard": "^14.3.1",
     "ts-loader": "^6.2.1",
     "typescript": "^3.7.4",
@@ -28,5 +31,33 @@
     "vue-template-compiler": "^2.6.11",
     "webpack": "^4.41.5",
     "webpack-cli": "^3.3.10"
+  },
+  "eslintConfig": {
+    "parser": "vue-eslint-parser",
+    "parserOptions": {
+      "ecmaVersion": 11,
+      "sourceType": "module",
+      "parser": "@typescript-eslint/parser"
+    },
+    "env": {
+      "browser": true,
+      "es2020": true
+    },
+    "extends": [
+      "plugin:vue/essential",
+      "plugin:@typescript-eslint/eslint-recommended",
+      "plugin:@typescript-eslint/recommended",
+      "plugin:prettier/recommended",
+      "standard",
+      "prettier"
+    ],
+    "plugins": [
+      "vue",
+      "@typescript-eslint",
+      "prettier"
+    ],
+    "rules": {
+      "prettier/prettier": "error"
+    }
   }
 }
