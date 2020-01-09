@@ -1,18 +1,15 @@
 <template>
-  <div id="app">
-    <h1>My Todo App!</h1>
-    <p>{{ test }}</p>
-  </div>
+  <Footer />
 </template>
 
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-
-@Component
-export default class App extends Vue {
-  test = "TSTest";
-}
+import Footer from "./layout/footer/Footer.vue";
+@Component({
+  components: { Footer }
+})
+export default class App extends Vue {}
 </script>
 
 <style></style>
