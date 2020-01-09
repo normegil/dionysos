@@ -1,6 +1,8 @@
 /* eslint-disable */
 const path = require('path')
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 function getConfiguration (env) {
   let cfg = {
@@ -29,16 +31,36 @@ function getConfiguration (env) {
             ]
           }
         },
+        {
+          test: /\.scss$/,
+          use: [
+            'vue-style-loader',
+            'css-loader',
+            {
+              loader: 'sass-loader',
+              options: {
+                prependData: '@import "src/assets/scss/all";',
+              },
+            },
+          ]
+        },
       ],
     },
     resolve: {
       extensions: ['.tsx', '.ts', '.js', '.vue'],
       alias: {
         vue$: 'vue/dist/vue.runtime.esm.js',
+        '@': path.resolve("./src"),
+        '@scss': path.resolve("./src/assets/scss")
       }
     },
     plugins: [
-      new VueLoaderPlugin()
+      new CleanWebpackPlugin(),
+      new VueLoaderPlugin(),
+      new HtmlWebpackPlugin({
+        title: 'Dionysos',
+        template: 'src/index.html'
+      }),
     ]
   }
 

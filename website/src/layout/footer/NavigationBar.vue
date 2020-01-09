@@ -21,4 +21,12 @@ export default class NavigationBar extends Vue {
 }
 </script>
 
-<style scoped></style>
+<style lang="scss">
+ul {
+  list-style: none;
+
+  li {
+    background: green;
+  }
+}
+</style>

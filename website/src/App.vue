@@ -12,4 +12,6 @@ import Footer from "./layout/footer/Footer.vue";
 export default class App extends Vue {}
 </script>
 
-<style></style>
+<style lang="scss">
+@import "src/assets/scss/colors";
+</style>

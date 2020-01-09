@@ -22,4 +22,9 @@ export default class Footer extends Vue {
 }
 </script>
 
-<style></style>
+<style lang="scss">
+footer {
+  font-size: $size;
+  display: flex;
+}
+</style>

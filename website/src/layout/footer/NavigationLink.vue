@@ -15,4 +15,8 @@ export default class NavigationLink extends Vue {
 }
 </script>
 
-<style scoped></style>
+<style lang="scss">
+a {
+  text-decoration: none;
+}
+</style>
