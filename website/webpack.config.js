@@ -43,7 +43,7 @@ function getConfiguration (env) {
           }
         },
         {
-          test: /\.scss$/,
+          test: /\.s?css$/,
           use: [
             'vue-style-loader',
             'css-loader',
@@ -55,6 +55,18 @@ function getConfiguration (env) {
             },
           ]
         },
+        {
+          test: /\.(woff(2)?|ttf|eot)(\?v=\d+\.\d+\.\d+)?$/,
+          use: [
+            {
+              loader: 'file-loader',
+              options: {
+                name: '[name].[ext]',
+                outputPath: 'fonts/'
+              }
+            }
+          ]
+        }
       ],
     },
     resolve: {

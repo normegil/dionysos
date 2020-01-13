@@ -17,10 +17,23 @@ export default class NavigationLink extends Vue {
 
 <style lang="scss">
 .navigation-link {
-  text-decoration: none;
-  color: $color-secondary;
-  font-size: 1.6rem;
-  display: inline-block;
-  margin: 0 5rem;
+  &:link,
+  &:visited {
+    text-decoration: none;
+    text-transform: capitalize;
+    font-size: 1.6rem;
+    display: inline-block;
+    padding: 1rem;
+    border-radius: 5px;
+    margin: 0 1rem;
+    transition: all 0.2s;
+    color: $color-grey-dark;
+  }
+
+  &:hover,
+  a:active {
+    background-color: $color-primary-light;
+    color: $color-grey-light-2;
+  }
 }
 </style>

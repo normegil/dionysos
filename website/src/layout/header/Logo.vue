@@ -23,7 +23,7 @@ export default class Logo extends Vue {
     width: 4rem;
     padding: 0.2rem;
     border-radius: 2px;
-    background-color: $white;
+    background-color: $color-white;
   }
 }
 </style>

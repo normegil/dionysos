@@ -34,7 +34,8 @@ export default class Header extends Vue {
   display: flex;
   align-items: center;
 
-  background-color: $color-primary-dark;
+  background-color: $color-primary-darker;
+  border-bottom: 1px solid $color-grey-light-1;
   padding: 0.4rem 0;
 
   &__logo {
