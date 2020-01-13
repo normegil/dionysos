@@ -2,7 +2,7 @@
 const path = require('path')
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 
 function getConfiguration (env) {
   let cfg = {
@@ -20,6 +20,17 @@ function getConfiguration (env) {
         {
           test: /\.vue$/,
           loader: 'vue-loader'
+        },
+        {
+          test: /\.(png|svg|jpg|gif)$/,
+          use: [
+            {
+              loader: 'url-loader',
+              options: {
+                limit: 8192,
+              },
+            },
+          ],
         },
         {
           test: /\.tsx?$/,
@@ -50,8 +61,8 @@ function getConfiguration (env) {
       extensions: ['.tsx', '.ts', '.js', '.vue'],
       alias: {
         vue$: 'vue/dist/vue.runtime.esm.js',
-        '@': path.resolve("./src"),
-        '@scss': path.resolve("./src/assets/scss")
+        '@': path.resolve('./src'),
+        '@scss': path.resolve('./src/assets/scss')
       }
     },
     plugins: [

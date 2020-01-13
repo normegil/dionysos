@@ -1,7 +1,8 @@
 <template>
-  <footer>
+  <header class="header">
+    <Logo class="header__logo" />
     <NavigationBar :links="links" />
-  </footer>
+  </header>
 </template>
 
 <script lang="ts">
@@ -9,11 +10,17 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import NavigationBar from "./NavigationBar.vue";
 import Link from "../../model/Link";
+import Logo from "./Logo.vue";
+
 @Component({
-  components: { NavigationBar }
+  components: { NavigationBar, Logo }
 })
-export default class Footer extends Vue {
+export default class Header extends Vue {
   links: Link[] = [
+    {
+      title: "Home",
+      href: "/"
+    },
     {
       title: "API Documentation",
       href: "/api/"
@@ -23,8 +30,15 @@ export default class Footer extends Vue {
 </script>
 
 <style lang="scss">
-footer {
-  font-size: $size;
+.header {
   display: flex;
+  align-items: center;
+
+  background-color: $color-primary-dark;
+  padding: 0.4rem 0;
+
+  &__logo {
+    margin: 0 1rem;
+  }
 }
 </style>

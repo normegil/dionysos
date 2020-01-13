@@ -1,5 +1,5 @@
 <template>
-  <a :href="link.href">{{ link.title }}</a>
+  <a class="navigation-link" :href="link.href">{{ link.title }}</a>
 </template>
 
 <script lang="ts">
@@ -16,7 +16,11 @@ export default class NavigationLink extends Vue {
 </script>
 
 <style lang="scss">
-a {
+.navigation-link {
   text-decoration: none;
+  color: $color-secondary;
+  font-size: 1.6rem;
+  display: inline-block;
+  margin: 0 5rem;
 }
 </style>

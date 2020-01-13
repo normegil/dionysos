@@ -1,5 +1,5 @@
 <template>
-  <ul>
+  <ul class="navigation-bar">
     <li v-for="link in links" :key="link.title">
       <NavigationLink :link="link" />
     </li>
@@ -22,11 +22,10 @@ export default class NavigationBar extends Vue {
 </script>
 
 <style lang="scss">
-ul {
+.navigation-bar {
   list-style: none;
 
-  li {
-    background: green;
-  }
+  display: flex;
+  flex-wrap: nowrap;
 }
 </style>
