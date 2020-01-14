@@ -9,10 +9,10 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import { Prop } from "vue-property-decorator";
-import LinkWithIcon from "../../model/LinkWithIcon";
+import LinkWithIcon from "../../../model/LinkWithIcon";
 
 @Component
-export default class Navigation extends Vue {
+export default class MainMenuItem extends Vue {
   @Prop({ default: {}, required: true })
   link!: LinkWithIcon;
 }

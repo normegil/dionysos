@@ -8,7 +8,7 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import MainMenuItem from "./MainMenuItem.vue";
-import LinkWithIcon from "../../model/LinkWithIcon";
+import LinkWithIcon from "../../../model/LinkWithIcon";
 @Component({
   components: { MainMenuItem }
 })
