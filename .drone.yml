@@ -4,6 +4,10 @@ type: docker
 name: default
 
 steps:
+  - name: Web UI - Download dependendies
+    image: node:13-alpine
+    commands:
+      - npm install --prefix website
   - name: Linting - WebUI
     image: node:13-alpine
     commands:
