@@ -4,12 +4,24 @@ type: docker
 name: default
 
 steps:
-  - name: Linting
+  - name: Linting - WebUI
+    image: node:13-alpine
+    commands:
+      - npm run lint --prefix website
+  - name: Linting - Go code
     image: golang:1.13-stretch
     commands:
       - sh ./refresh-dev-env.sh
       - ./bin/golangci-lint --version
       - sh ./linter.sh
+  - name: Generate - Web UI
+    image: node:13-alpine
+    commands:
+      - npm run build:prod --prefix website
+  - name: Generate - Go
+    image: golang:1.13-stretch
+    commands:
+      - pkger -o cmd
   - name: Test
     image: golang:1.13-stretch
     commands:
