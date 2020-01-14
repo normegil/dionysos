@@ -1,7 +1,24 @@
 ---
 kind: pipeline
 type: docker
-name: default
+name: backend
+
+steps:
+  - name: Linting - Go code
+    image: golang:1.13-stretch
+    commands:
+      - sh ./refresh-dev-env.sh
+      - ./bin/golangci-lint --version
+      - sh ./linter.sh
+  - name: Test
+    image: golang:1.13-stretch
+    commands:
+      - go test ./...
+      - go test -race ./...
+---
+kind: pipeline
+type: docker
+name: frontend
 
 steps:
   - name: Download dependendies - Web UI
@@ -12,27 +29,24 @@ steps:
     image: node:13-alpine
     commands:
       - npm run lint --prefix website
-  - name: Linting - Go code
-    image: golang:1.13-stretch
-    commands:
-      - sh ./refresh-dev-env.sh
-      - ./bin/golangci-lint --version
-      - sh ./linter.sh
   - name: Generate - Web UI
     image: node:13-alpine
     commands:
       - npm run build:prod --prefix website
+---
+kind: pipeline
+type: docker
+name: create_executable
+depends_on:
+  - backend
+  - frontend
+steps:
   - name: Generate - Go
     image: golang:1.13-stretch
     commands:
       - go get github.com/markbates/pkger/cmd/pkger
       - pkger -o cmd
-  - name: Test
-    image: golang:1.13-stretch
-    commands:
-      - go test ./...
-      - go test -race ./...
-  - name: Build
+  - name: build
     image: golang:1.13-stretch
     commands:
       - env GOOS=linux GOARCH=amd64 go build -o ./dist/dionysos-server.linux-amd64 ./cmd/main.go
