@@ -19,7 +19,7 @@ export default class Logo extends Vue {}
     font-size: 4rem;
     font-weight: 300;
     color: $color-white;
-    transition: all 0.2s;
+    transition: all 0.3s;
   }
 
   &:hover,

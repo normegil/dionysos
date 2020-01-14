@@ -27,6 +27,7 @@ export default class MainMenuItem extends Vue {
   padding-left: 3rem;
   color: $color-grey-dark;
   text-decoration: none;
+  transition: all 0.3s;
 
   &:hover {
     background-color: $color-grey-dark-3;

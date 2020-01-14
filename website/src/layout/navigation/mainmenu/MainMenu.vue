@@ -1,6 +1,11 @@
 <template>
   <div class="main-menu__container">
     <MainMenuItem v-for="link in links" :key="link.title" :link="link" />
+    <UnfoldableMenuItem
+      title="Help"
+      icon="las la-question"
+      :sub-items="subItems"
+    />
   </div>
 </template>
 
@@ -9,8 +14,9 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import MainMenuItem from "./MainMenuItem.vue";
 import LinkWithIcon from "../../../model/LinkWithIcon";
+import UnfoldableMenuItem from "./UnfoldableMenuItem.vue";
 @Component({
-  components: { MainMenuItem }
+  components: { UnfoldableMenuItem, MainMenuItem }
 })
 export default class Navigation extends Vue {
   links: LinkWithIcon[] = [
@@ -23,6 +29,14 @@ export default class Navigation extends Vue {
       title: "Items",
       href: "#",
       icon: "las la-boxes"
+    }
+  ];
+
+  subItems: LinkWithIcon[] = [
+    {
+      title: "Documentation",
+      href: "#",
+      icon: "las la-book"
     }
   ];
 }
