@@ -8,10 +8,6 @@ steps:
     image: node:13-alpine
     commands:
       - npm install --prefix website
-  - name: Download dependendies - Go
-    image: golang:1.13-stretch
-    commands:
-      - go mod download
   - name: Linting - WebUI
     image: node:13-alpine
     commands:
@@ -29,6 +25,7 @@ steps:
   - name: Generate - Go
     image: golang:1.13-stretch
     commands:
+      - go get github.com/markbates/pkger/cmd/pkger
       - pkger -o cmd
   - name: Test
     image: golang:1.13-stretch
