@@ -5,7 +5,6 @@
       <SwitchNavigation />
     </div>
     <MainMenu />
-    <BottomMenu class="navigation__bottom-menu" />
   </div>
 </template>
 
@@ -14,11 +13,10 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import Logo from "./Logo.vue";
 import SwitchNavigation from "./SwitchNavigation.vue";
-import MainMenu from "./mainmenu/MainMenu.vue";
-import BottomMenu from "./bottommenu/BottomMenu.vue";
+import MainMenu from "./MainMenu.vue";
 
 @Component({
-  components: { BottomMenu, MainMenu, SwitchNavigation, Logo }
+  components: { MainMenu, SwitchNavigation, Logo }
 })
 export default class Navigation extends Vue {}
 </script>
@@ -45,11 +43,6 @@ export default class Navigation extends Vue {}
   &__logo {
     margin-right: 5rem;
     margin-left: 1rem;
-  }
-
-  &__bottom-menu {
-    position: absolute;
-    bottom: 0;
   }
 }
 </style>
