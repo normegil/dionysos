@@ -24,7 +24,7 @@ export default class Navigation extends Vue {}
 <style lang="scss">
 .navigation {
   background-image: linear-gradient(
-      rgba($color-black, 0.85),
+      rgba($color-black, 0.80),
       rgba($color-black, 0.95)
     ),
     url("../../assets/images/navigation-background.jpg");

@@ -44,13 +44,7 @@ import Component from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import LinkWithIcon from "../../model/LinkWithIcon";
 
-@Component({
-  data() {
-    return {
-      turn: 0
-    };
-  }
-})
+@Component
 export default class UnfoldableMenuItem extends Vue {
   @Prop({ default: "", required: true })
   icon!: string;
