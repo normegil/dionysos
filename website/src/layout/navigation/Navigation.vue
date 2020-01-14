@@ -1,9 +1,10 @@
 <template>
   <div class="navigation">
-    <div class="navigation__main">
+    <div class="navigation__logo-container">
       <Logo class="navigation__logo" />
       <SwitchNavigation />
     </div>
+    <MainMenu />
   </div>
 </template>
 
@@ -12,9 +13,10 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import Logo from "./Logo.vue";
 import SwitchNavigation from "./SwitchNavigation.vue";
+import MainMenu from "./MainMenu.vue";
 
 @Component({
-  components: { SwitchNavigation, Logo }
+  components: { MainMenu, SwitchNavigation, Logo }
 })
 export default class Navigation extends Vue {}
 </script>
@@ -30,7 +32,7 @@ export default class Navigation extends Vue {}
   color: $color-grey-light-2;
   width: 60rem;
 
-  &__main {
+  &__logo-container {
     background-color: $color-black;
     display: flex;
     align-items: baseline;
@@ -39,7 +41,7 @@ export default class Navigation extends Vue {}
 
   &__logo {
     margin-right: 5rem;
-    margin-left: 2rem;
+    margin-left: 1rem;
   }
 }
 </style>

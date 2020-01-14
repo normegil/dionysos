@@ -14,11 +14,11 @@ export default class SwitchNavigation extends Vue {}
 
 <style lang="scss">
 .switch-navigation__icon {
-  font-size: 3rem;
+  font-size: 4rem;
   color: $color-grey-dark;
 
   &:hover {
-    color: $color-grey-light-2;
+    color: $color-white;
   }
 }
 </style>
