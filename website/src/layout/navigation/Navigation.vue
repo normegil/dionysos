@@ -21,7 +21,12 @@ export default class Navigation extends Vue {}
 
 <style lang="scss">
 .navigation {
-  background-color: $color-grey-dark-3;
+  background-image: linear-gradient(
+      rgba($color-black, 0.85),
+      rgba($color-black, 0.95)
+    ),
+    url("../../assets/images/navigation-background.jpg");
+  background-size: cover;
   color: $color-grey-light-2;
   width: 60rem;
 
@@ -33,7 +38,8 @@ export default class Navigation extends Vue {}
   }
 
   &__logo {
-    margin-right: 2rem;
+    margin-right: 5rem;
+    margin-left: 2rem;
   }
 }
 </style>

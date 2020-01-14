@@ -17,7 +17,7 @@ export default class Logo extends Vue {}
     text-decoration: none;
     text-transform: uppercase;
     font-size: 3rem;
-    font-weight: 100;
+    font-weight: 300;
     color: $color-white;
     transition: all 0.2s;
   }
