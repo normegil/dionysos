@@ -4,10 +4,14 @@ type: docker
 name: default
 
 steps:
-  - name: Web UI - Download dependendies
+  - name: Download dependendies - Web UI
     image: node:13-alpine
     commands:
       - npm install --prefix website
+  - name: Download dependendies - Go
+    image: golang:1.13-stretch
+    commands:
+      - go mod download
   - name: Linting - WebUI
     image: node:13-alpine
     commands:
