@@ -5,6 +5,9 @@
       <div class="content__title-container">
         <h1 class="content__title-text">{{ $t("ui.menu.main.items") }}</h1>
       </div>
+      <div class="content__table-container">
+        <Table :headings="headings" :content="items" />
+      </div>
     </div>
   </div>
 </template>
@@ -13,10 +16,26 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import SearchField from "../components/SearchField.vue";
+import Table from "../components/Table.vue";
+import Item from "../model/Item";
 @Component({
-  components: { SearchField }
+  components: { Table, SearchField }
 })
-export default class Content extends Vue {}
+export default class Content extends Vue {
+  items: Item[] = [
+    new Item("0", "Tomates"),
+    new Item("1", "Oignons"),
+    new Item("2", "Carotte"),
+    new Item("3", "Spaggethi")
+  ];
+
+  get headings(): string[] {
+    return [
+      this.$t("ui.components.table.items.heading.name") as string,
+      "Actions"
+    ];
+  }
+}
 </script>
 
 <style lang="scss">
@@ -26,15 +45,25 @@ export default class Content extends Vue {}
   overflow: auto;
 
   &__main {
-    margin-left: 3.7rem;
+    margin: 0 3.7rem;
   }
 
   &__title {
     &-text {
       font-family: "Rokkitt", "Ubuntu Mono", sans-serif;
       font-weight: 400;
+      margin-left: 2rem;
       margin-top: 2.2rem;
       font-size: 2.8rem;
+    }
+  }
+
+  &__table {
+    &-container {
+      margin-top: 2.2rem;
+      padding: 1rem;
+      border-radius: 2px;
+      box-shadow: 0 0 5px $color-grey-light-2;
     }
   }
 }
