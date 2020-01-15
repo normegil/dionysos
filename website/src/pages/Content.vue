@@ -5,7 +5,11 @@
       <div class="content__title-container">
         <h1 class="content__title-text">{{ $t("ui.menu.main.items") }}</h1>
       </div>
-      <div class="content__table-container">
+      <div class="content__container flex-content">
+        <Pagination current-index="5" item-per-page="2" number-of-items="10" />
+        <Button icon="las la-plus" />
+      </div>
+      <div class="content__container">
         <Table :headings="headings" :content="items" />
       </div>
     </div>
@@ -18,8 +22,10 @@ import Component from "vue-class-component";
 import SearchField from "../components/SearchField.vue";
 import Table from "../components/Table.vue";
 import Item from "../model/Item";
+import Button from "../components/Button.vue";
+import Pagination from "../components/Pagination.vue";
 @Component({
-  components: { Table, SearchField }
+  components: { Pagination, Button, Table, SearchField }
 })
 export default class Content extends Vue {
   items: Item[] = [
@@ -30,10 +36,7 @@ export default class Content extends Vue {
   ];
 
   get headings(): string[] {
-    return [
-      this.$t("ui.components.table.items.heading.name") as string,
-      "Actions"
-    ];
+    return [this.$t("ui.components.table.items.heading.name") as string];
   }
 }
 </script>
@@ -58,13 +61,14 @@ export default class Content extends Vue {
     }
   }
 
-  &__table {
-    &-container {
-      margin-top: 2.2rem;
-      padding: 1rem;
-      border-radius: 2px;
-      box-shadow: 0 0 5px $color-grey-light-2;
-    }
+  &__container {
+    margin-top: 2.2rem;
+    padding: 1rem;
+    border-radius: 2px;
+    box-shadow: 0 0 5px $color-grey-light-2;
   }
+}
+.flex-content {
+  display: flex;
 }
 </style>

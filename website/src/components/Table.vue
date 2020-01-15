@@ -36,11 +36,12 @@ export default class Table extends Vue {
 <style lang="scss">
 .table {
   width: 100%;
+  border-collapse: collapse;
 
   &__heading {
     text-align: left;
     border-bottom: 2px solid $color-grey-dark;
-    padding: 1rem 0;
+    padding: 1rem;
 
     &:not(:last-child) {
       border-right: 2px solid $color-grey-dark;
@@ -48,10 +49,11 @@ export default class Table extends Vue {
   }
 
   &__cell {
-    padding: 1rem 0;
+    padding: 1rem;
   }
 
   &__row {
+    transition: all 0.3s;
     &:hover {
       background-color: $color-grey-light-2;
     }
