@@ -9,7 +9,7 @@ import "line-awesome/dist/line-awesome/css/line-awesome.min.css";
 Vue.use(VueI18n);
 
 const i18n = new VueI18n({
-  locale: "fr",
+  locale: "en",
   fallbackLocale: "en",
   messages: TRANSLATIONS
 });

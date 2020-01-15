@@ -13,6 +13,11 @@ export const ENGLISH_TRANSLATION = {
           }
         }
       }
+    },
+    components: {
+      "search-field": {
+        placeholder: "Search storages, items, ..."
+      }
     }
   }
 };

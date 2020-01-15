@@ -1,7 +1,7 @@
 <template>
   <div class="app">
-    <Navigation />
-    <Content />
+    <Navigation class="app__navigation" />
+    <Content class="app__content" />
   </div>
 </template>
 
@@ -9,7 +9,7 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import Navigation from "./layout/navigation/Navigation.vue";
-import Content from "./layout/content/Content.vue";
+import Content from "./pages/Content.vue";
 @Component({
   components: { Content, Navigation }
 })
@@ -22,5 +22,13 @@ export default class App extends Vue {}
   display: flex;
   height: 100vh;
   font-size: 1.6rem;
+  overflow: hidden;
+
+  &__content {
+    width: 100%;
+  }
+
+  &__navigation {
+  }
 }
 </style>

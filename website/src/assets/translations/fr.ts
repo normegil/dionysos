@@ -13,6 +13,11 @@ export const FRENCH_TRANSLATION = {
           }
         }
       }
+    },
+    components: {
+      "search-field": {
+        placeholder: "Rechercher les stockages, les objets, ..."
+      }
     }
   }
 };

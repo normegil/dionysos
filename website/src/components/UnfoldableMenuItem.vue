@@ -59,7 +59,9 @@ export default class UnfoldableMenuItem extends Vue {
   subItems!: LinkWithIcon[];
 
   @Prop({ default: false, required: false })
-  unfold!: boolean;
+  startUnfold!: boolean;
+
+  unfold = this.startUnfold;
 
   get borderClass(): string {
     if (this.direction === "down") {
