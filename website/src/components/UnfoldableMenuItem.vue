@@ -100,7 +100,7 @@ export default class UnfoldableMenuItem extends Vue {
       return { bottom: "0rem" };
     }
 
-    const mainItemHeight = 5.2; // Main item height
+    const mainItemHeight = 4; // Main item height
 
     return {
       bottom: mainItemHeight + "rem"
@@ -117,9 +117,9 @@ export default class UnfoldableMenuItem extends Vue {
 .menu-foldable-item {
   &__main {
     display: block;
-    font-size: 2.5rem;
-    padding: 1rem 0;
-    padding-left: 3rem;
+    font-size: 1.9rem;
+    padding: 0.75rem 0;
+    padding-left: 2.2rem;
     color: $color-grey-dark;
     text-decoration: none;
     position: relative;
@@ -132,13 +132,13 @@ export default class UnfoldableMenuItem extends Vue {
 
     &-text {
       display: inline-block;
-      margin-left: 1rem;
+      margin-left: 0.75rem;
     }
 
     &-fold-icon-container {
       position: absolute;
-      right: 3rem;
-      top: 1rem;
+      right: 2.2rem;
+      top: 0.75rem;
       color: rgba($color-black, 0);
       transition: all 0.3s;
     }
@@ -154,9 +154,9 @@ export default class UnfoldableMenuItem extends Vue {
     }
 
     display: block;
-    font-size: 2rem;
-    padding: 1rem 0;
-    padding-left: 5rem;
+    font-size: 1.5rem;
+    padding: 0.75rem 0;
+    padding-left: 3.7rem;
     color: $color-grey-dark;
     text-decoration: none;
 
@@ -167,7 +167,7 @@ export default class UnfoldableMenuItem extends Vue {
 
     &-text {
       display: inline-block;
-      margin-left: 0.8rem;
+      margin-left: 0.6rem;
     }
   }
   &--border-top {

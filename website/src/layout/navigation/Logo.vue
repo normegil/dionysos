@@ -15,8 +15,8 @@ export default class Logo extends Vue {}
   &:link,
   &:visited {
     text-decoration: none;
-    text-transform: uppercase;
-    font-size: 4rem;
+    font-family: "Rokkitt", "Ubuntu Mono", sans-serif;
+    font-size: 3rem;
     font-weight: 300;
     color: $color-white;
     transition: all 0.3s;

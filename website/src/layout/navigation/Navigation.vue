@@ -33,12 +33,12 @@ export default class Navigation extends Vue {}
     background-color: $color-black;
     display: flex;
     align-items: baseline;
-    padding: 0.8rem;
+    padding: 0.6rem;
   }
 
   &__logo {
-    margin-right: 5rem;
-    margin-left: 1rem;
+    margin-right: 3.7rem;
+    margin-left: 0.75rem;
   }
 }
 </style>

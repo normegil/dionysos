@@ -14,7 +14,7 @@ export default class SwitchNavigation extends Vue {}
 
 <style lang="scss">
 .switch-navigation__icon {
-  font-size: 4rem;
+  font-size: 2.2rem;
   color: $color-grey-dark;
   transition: all 0.3s;
 

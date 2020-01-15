@@ -21,10 +21,10 @@ export default class MainMenuItem extends Vue {
 <style lang="scss">
 .main-menu-item {
   display: block;
-  font-size: 2.5rem;
-  padding: 1rem 0;
+  font-size: 1.9rem;
+  padding: 0.75rem 0;
   border-bottom: 1px solid $color-grey-dark-3;
-  padding-left: 3rem;
+  padding-left: 2.2rem;
   color: $color-grey-dark;
   text-decoration: none;
   transition: all 0.3s;
@@ -36,7 +36,7 @@ export default class MainMenuItem extends Vue {
 
   &__text {
     display: inline-block;
-    margin-left: 1rem;
+    margin-left: 0.75rem;
   }
 }
 </style>

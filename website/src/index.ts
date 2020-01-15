@@ -3,7 +3,8 @@ import VueI18n from "vue-i18n";
 import App from "./App.vue";
 import { TRANSLATIONS } from "./assets/translations/all";
 import "./assets/scss/index.scss";
-import "typeface-lato";
+import "typeface-ubuntu-mono";
+import "typeface-rokkitt";
 import "line-awesome/dist/line-awesome/css/line-awesome.min.css";
 
 Vue.use(VueI18n);

@@ -26,13 +26,15 @@ export default class Content extends Vue {}
   overflow: auto;
 
   &__main {
-    margin-left: 5rem;
+    margin-left: 3.7rem;
   }
 
   &__title {
     &-text {
+      font-family: "Rokkitt", "Ubuntu Mono", sans-serif;
       font-weight: 400;
-      margin-top: 3rem;
+      margin-top: 2.2rem;
+      font-size: 2.8rem;
     }
   }
 }
