@@ -18,7 +18,7 @@ export default class App extends Vue {}
 
 <style lang="scss">
 .app {
-  color: $color-grey-dark;
+  color: $color-grey-dark-3;
   display: flex;
   height: 100vh;
   font-size: 1.6rem;

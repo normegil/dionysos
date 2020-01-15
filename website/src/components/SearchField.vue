@@ -35,6 +35,7 @@ export default class SearchField extends Vue {
     color: $color-grey-dark-3;
     padding: 1.95rem;
     border: none;
+    border-bottom: 1px solid $color-grey-light-2;
   }
 }
 </style>
