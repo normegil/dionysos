@@ -5,7 +5,7 @@
     </div>
     <div class="bottom-menu">
       <UnfoldableMenuItem
-        title="More"
+        :title="$t('ui.menu.main.more.title')"
         icon="las la-ellipsis-h"
         :sub-items="moreMenuItems"
         direction="up"
@@ -19,52 +19,56 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import MainMenuItem from "./MainMenuItem.vue";
 import LinkWithIcon from "../../model/LinkWithIcon";
-import UnfoldableMenuItem from "../components/UnfoldableMenuItem.vue";
+import UnfoldableMenuItem from "../../components/UnfoldableMenuItem.vue";
 
 @Component({
   components: { MainMenuItem, UnfoldableMenuItem }
 })
 export default class MainMenu extends Vue {
-  links: LinkWithIcon[] = [
-    {
-      title: "Storages",
-      href: "#",
-      icon: "las la-warehouse"
-    },
-    {
-      title: "Items",
-      href: "#",
-      icon: "las la-boxes"
-    }
-  ];
+  get links(): LinkWithIcon[] {
+    return [
+      {
+        title: this.$t("ui.menu.main.storages") as string,
+        href: "#",
+        icon: "las la-warehouse"
+      },
+      {
+        title: this.$t("ui.menu.main.items") as string,
+        href: "#",
+        icon: "las la-boxes"
+      }
+    ];
+  }
 
-  moreMenuItems: LinkWithIcon[] = [
-    {
-      title: "Documentation",
-      href: "#",
-      icon: "las la-book"
-    },
-    {
-      title: "API",
-      href: "#",
-      icon: "las la-server"
-    },
-    {
-      title: "Bugs & suggestions",
-      href: "#",
-      icon: "las la-bug"
-    },
-    {
-      title: "Github",
-      href: "#",
-      icon: "lab la-github"
-    },
-    {
-      title: "Licenses",
-      href: "#",
-      icon: "lab la-creative-commons-by"
-    }
-  ];
+  get moreMenuItems(): LinkWithIcon[] {
+    return [
+      {
+        title: this.$t("ui.menu.main.more.sub.documentation") as string,
+        href: "#",
+        icon: "las la-book"
+      },
+      {
+        title: "API",
+        href: "#",
+        icon: "las la-server"
+      },
+      {
+        title: this.$t("ui.menu.main.more.sub.bugs") as string,
+        href: "#",
+        icon: "las la-bug"
+      },
+      {
+        title: "Github",
+        href: "#",
+        icon: "lab la-github"
+      },
+      {
+        title: this.$t("ui.menu.main.more.sub.licenses") as string,
+        href: "#",
+        icon: "lab la-creative-commons-by"
+      }
+    ];
+  }
 }
 </script>
 

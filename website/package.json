@@ -17,6 +17,7 @@
     "typeface-lato": "0.0.75",
     "vue": "^2.6.11",
     "vue-class-component": "^7.1.0",
+    "vue-i18n": "^8.15.3",
     "vue-property-decorator": "^8.3.0"
   },
   "devDependencies": {
