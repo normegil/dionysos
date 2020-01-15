@@ -8,7 +8,7 @@ export const ENGLISH_TRANSLATION = {
           title: "More",
           sub: {
             documentation: "Documentation",
-            bugs: "Bugs & suggestions",
+            bugs: "Bugs",
             licenses: "Licenses"
           }
         }

@@ -8,7 +8,7 @@ export const FRENCH_TRANSLATION = {
           title: "Plus",
           sub: {
             documentation: "Documentation",
-            bugs: "Bugs & suggestions",
+            bugs: "Bugs",
             licenses: "Licenses"
           }
         }
