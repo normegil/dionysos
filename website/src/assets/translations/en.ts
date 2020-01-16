@@ -18,6 +18,11 @@ export const ENGLISH_TRANSLATION = {
       "search-field": {
         placeholder: "Search storages, items, ..."
       },
+      "specific-search-field": {
+        items: {
+          placeholder: "Search items ..."
+        }
+      },
       actions: {
         add: "Add"
       },

@@ -6,7 +6,11 @@
         <h1 class="content__title-text">{{ $t("ui.menu.main.items") }}</h1>
       </div>
       <div class="content__container flex-content">
-        <Pagination current-index="5" item-per-page="2" number-of-items="10" />
+        <Pagination current-index="0" item-per-page="2" number-of-items="1" />
+        <SpecificSearchField
+          class="content__search-field"
+          placeholder-key="ui.components.specific-search-field.items.placeholder"
+        />
         <Button icon="las la-plus" />
       </div>
       <div class="content__container">
@@ -24,8 +28,9 @@ import Table from "../components/Table.vue";
 import Item from "../model/Item";
 import Button from "../components/Button.vue";
 import Pagination from "../components/Pagination.vue";
+import SpecificSearchField from "../components/SpecificSearchField.vue";
 @Component({
-  components: { Pagination, Button, Table, SearchField }
+  components: { SpecificSearchField, Pagination, Button, Table, SearchField }
 })
 export default class Content extends Vue {
   items: Item[] = [
@@ -66,6 +71,10 @@ export default class Content extends Vue {
     padding: 1rem;
     border-radius: 2px;
     box-shadow: 0 0 5px $color-grey-light-2;
+  }
+  &__search-field {
+    width: 100%;
+    margin: 0 1rem;
   }
 }
 .flex-content {

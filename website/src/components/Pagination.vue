@@ -29,13 +29,49 @@ export default class Pagination extends Vue {
   currentIndex!: number;
 
   get pages(): number[] {
-    return [1, 2, 3, 4, 5];
+    const numbers: number[] = [];
+    for (let i = 2; i !== 0 && this.currentPage - i >= 0; i--) {
+      numbers.push(this.currentPage - i);
+    }
+    numbers.push(this.currentPage);
+    for (
+      let i = 1;
+      numbers.length < 5 && this.currentPage + i <= this.totalPages;
+      i++
+    ) {
+      numbers.push(this.currentPage + i);
+    }
+    for (let i = 3; numbers.length < 5 && this.currentPage - i >= 0; i++) {
+      numbers.push(this.currentPage - i);
+    }
+    return numbers.sort();
+  }
+
+  get currentPage(): number {
+    let currentPage = Math.floor(this.currentIndex / this.itemPerPage);
+    const overflow = this.currentIndex % this.itemPerPage;
+    if (overflow !== 0) {
+      currentPage += 1;
+    }
+    console.log("Current: " + currentPage);
+    return currentPage;
+  }
+
+  get totalPages(): number {
+    let numberOfPages = Math.floor(this.numberOfItems / this.itemPerPage);
+    const divisionOverflow = this.numberOfItems % this.itemPerPage;
+    if (divisionOverflow !== 0) {
+      numberOfPages += 1;
+    }
+    console.log("Total: " + numberOfPages);
+    return numberOfPages;
   }
 }
 </script>
 
 <style lang="scss">
 .pagination {
+  white-space: nowrap;
   &__button {
     display: inline-block;
     padding: 0.5rem;
@@ -59,8 +95,7 @@ export default class Pagination extends Vue {
     }
 
     &--number {
-      padding-left: 1rem;
-      padding-right: 1rem;
+      padding: 0.56rem 1rem 0.5rem;
     }
 
     &:hover {
