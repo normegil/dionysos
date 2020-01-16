@@ -1,8 +1,14 @@
 <template>
-  <a :href="link.href" class="main-menu-item">
-    <i :class="link.icon" class="main-menu-item__icon" />
-    <span class="main-menu-item__text"> {{ link.title }}</span>
-  </a>
+  <div>
+    <router-link v-if="!isLink" :to="link.href" class="main-menu-item">
+      <i :class="link.icon" class="main-menu-item__icon" />
+      <span class="main-menu-item__text"> {{ link.title }}</span>
+    </router-link>
+    <a v-if="isLink" :href="link.href" class="main-menu-item">
+      <i :class="link.icon" class="main-menu-item__icon" />
+      <span class="main-menu-item__text"> {{ link.title }}</span>
+    </a>
+  </div>
 </template>
 
 <script lang="ts">
@@ -15,6 +21,9 @@ import LinkWithIcon from "../../model/LinkWithIcon";
 export default class MainMenuItem extends Vue {
   @Prop({ default: {}, required: true })
   link!: LinkWithIcon;
+
+  @Prop({ default: false, required: false })
+  isLink!: boolean;
 }
 </script>
 

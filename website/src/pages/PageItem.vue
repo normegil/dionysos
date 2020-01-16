@@ -32,7 +32,7 @@ import SpecificSearchField from "../components/SpecificSearchField.vue";
 @Component({
   components: { SpecificSearchField, Pagination, Button, Table, SearchField }
 })
-export default class Content extends Vue {
+export default class PageItem extends Vue {
   items: Item[] = [
     new Item("0", "Tomates"),
     new Item("1", "Oignons"),

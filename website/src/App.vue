@@ -1,7 +1,7 @@
 <template>
   <div class="app">
     <Navigation class="app__navigation" />
-    <Content class="app__content" />
+    <router-view class="app__content" />
   </div>
 </template>
 
@@ -9,7 +9,7 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import Navigation from "./layout/navigation/Navigation.vue";
-import Content from "./pages/Content.vue";
+import Content from "./pages/PageItem.vue";
 @Component({
   components: { Content, Navigation }
 })

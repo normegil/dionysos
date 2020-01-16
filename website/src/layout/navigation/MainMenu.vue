@@ -29,12 +29,12 @@ export default class MainMenu extends Vue {
     return [
       {
         title: this.$t("ui.menu.main.storages") as string,
-        href: "#",
+        href: "/storages",
         icon: "las la-warehouse"
       },
       {
         title: this.$t("ui.menu.main.items") as string,
-        href: "#",
+        href: "/items",
         icon: "las la-boxes"
       }
     ];
