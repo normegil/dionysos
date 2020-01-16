@@ -1,6 +1,7 @@
 import Vue from "vue";
 import VueI18n from "vue-i18n";
 import VueRouter from "vue-router";
+import Axios from "axios";
 import App from "./App.vue";
 import { ROUTES } from "./routes/routes";
 import { TRANSLATIONS } from "./assets/translations/all";

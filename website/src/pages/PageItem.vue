@@ -43,6 +43,10 @@ export default class PageItem extends Vue {
   get headings(): string[] {
     return [this.$t("ui.components.table.items.heading.name") as string];
   }
+
+  mounted() {
+    console.log("Mounted");
+  }
 }
 </script>
 
