@@ -28,23 +28,16 @@ export default class Pagination extends Vue {
   @Prop({ required: true })
   currentIndex!: number;
 
+  @Prop({ default: 5, required: false })
+  numberDisplayedPage = 5;
+
   get pages(): number[] {
+    const limits = this.pageLimits();
     const numbers: number[] = [];
-    for (let i = 2; i !== 0 && this.currentPage - i >= 0; i--) {
-      numbers.push(this.currentPage - i);
+    for (let i = limits.start; i <= limits.end; i++) {
+      numbers.push(i);
     }
-    numbers.push(this.currentPage);
-    for (
-      let i = 1;
-      numbers.length < 5 && this.currentPage + i <= this.totalPages;
-      i++
-    ) {
-      numbers.push(this.currentPage + i);
-    }
-    for (let i = 3; numbers.length < 5 && this.currentPage - i >= 0; i++) {
-      numbers.push(this.currentPage - i);
-    }
-    return numbers.sort();
+    return numbers;
   }
 
   get currentPage(): number {
@@ -53,18 +46,52 @@ export default class Pagination extends Vue {
     if (overflow !== 0) {
       currentPage += 1;
     }
-    console.log("Current: " + currentPage);
     return currentPage;
   }
 
-  get totalPages(): number {
-    let numberOfPages = Math.floor(this.numberOfItems / this.itemPerPage);
+  get lastPage(): number {
+    let lastPage = Math.floor(this.numberOfItems / this.itemPerPage);
     const divisionOverflow = this.numberOfItems % this.itemPerPage;
-    if (divisionOverflow !== 0) {
-      numberOfPages += 1;
+    if (divisionOverflow === 0) {
+      lastPage -= 1;
     }
-    console.log("Total: " + numberOfPages);
-    return numberOfPages;
+    return lastPage;
+  }
+
+  pageLimits(): { start: number; end: number } {
+    let startIndex = this.currentPage - 2;
+    let endIndex = this.currentPage + 2;
+
+    if (this.lastPage < this.numberDisplayedPage) {
+      return {
+        start: 0,
+        end: this.lastPage
+      };
+    }
+
+    console.log("A:" + startIndex + " : " + endIndex);
+    if (startIndex < 0) {
+      const underflow = -startIndex;
+      endIndex += underflow;
+      startIndex = 0;
+    }
+
+    console.log("B:" + startIndex + " : " + endIndex);
+    if (endIndex > this.lastPage) {
+      const overflow = endIndex - this.lastPage;
+      endIndex = this.lastPage;
+      startIndex -= overflow;
+      console.log("C:" + startIndex + " : " + endIndex);
+      if (startIndex < 0) {
+        startIndex = 0;
+      }
+    }
+
+    console.log("D:" + startIndex + " : " + endIndex);
+    return {
+      start: startIndex,
+      end: endIndex
+    };
   }
 }
 </script>
@@ -72,6 +99,7 @@ export default class Pagination extends Vue {
 <style lang="scss">
 .pagination {
   white-space: nowrap;
+
   &__button {
     display: inline-block;
     padding: 0.5rem;
@@ -95,7 +123,7 @@ export default class Pagination extends Vue {
     }
 
     &--number {
-      padding: 0.56rem 1rem 0.5rem;
+      padding: 0.5rem 1rem;
     }
 
     &:hover {

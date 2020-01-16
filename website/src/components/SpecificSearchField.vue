@@ -38,6 +38,7 @@ export default class SpecificSearchField extends Vue {
     width: 100%;
     border: 1px solid $color-grey-light-2;
     border-radius: 5px;
+    font-size: 1.6rem;
     transition: all 0.3s;
 
     &:hover,

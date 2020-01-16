@@ -6,7 +6,7 @@
         <h1 class="content__title-text">{{ $t("ui.menu.main.items") }}</h1>
       </div>
       <div class="content__container flex-content">
-        <Pagination current-index="0" item-per-page="2" number-of-items="1" />
+        <Pagination current-index="1" item-per-page="2" number-of-items="3" />
         <SpecificSearchField
           class="content__search-field"
           placeholder-key="ui.components.specific-search-field.items.placeholder"
