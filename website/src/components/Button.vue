@@ -28,15 +28,13 @@ export default class Button extends Vue {
   display: inline-block;
   padding: 0.5rem;
   border-radius: 5px;
-  background-color: $color-grey-light-2;
   border: 1px solid $color-grey-light-2;
   text-decoration: none;
   color: $color-grey-dark-3;
   transition: all 0.3s;
 
   &:hover {
-    background-color: $color-grey-light-1;
-    border: 1px solid $color-grey-light-1;
+    border: 1px solid $color-grey-dark;
   }
 }
 </style>
