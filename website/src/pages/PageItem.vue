@@ -33,19 +33,16 @@ import SpecificSearchField from "../components/SpecificSearchField.vue";
   components: { SpecificSearchField, Pagination, Button, Table, SearchField }
 })
 export default class PageItem extends Vue {
-  items: Item[] = [
-    new Item("0", "Tomates"),
-    new Item("1", "Oignons"),
-    new Item("2", "Carotte"),
-    new Item("3", "Spaggethi")
-  ];
+  get items(): Item[] {
+    return this.$store.state.items.items;
+  }
 
   get headings(): string[] {
     return [this.$t("ui.components.table.items.heading.name") as string];
   }
 
-  mounted() {
-    console.log("Mounted");
+  mounted(): void {
+    this.$store.dispatch("items/load");
   }
 }
 </script>

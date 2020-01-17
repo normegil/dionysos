@@ -1,16 +1,16 @@
 import Rowable from "./Rowable";
 
 export default class Item implements Rowable {
-  private identifier: string;
+  private id: string;
   private name: string;
 
-  constructor(identifier: string, name: string) {
-    this.identifier = identifier;
+  constructor(id: string, name: string) {
+    this.id = id;
     this.name = name;
   }
 
-  id(): string {
-    return this.identifier;
+  identifier(): string {
+    return this.id;
   }
 
   toRow(): string[] {

@@ -1,4 +1,4 @@
 export default interface Rowable {
-  id(): string;
+  identifier(): string;
   toRow(): string[];
 }

@@ -5,11 +5,11 @@
         {{ heading }}
       </th>
     </tr>
-    <tr class="table__row" v-for="row in content" :key="row.id()">
+    <tr class="table__row" v-for="row in content" :key="row.identifier()">
       <td
         class="table__cell"
         v-for="(cell, index) in row.toRow()"
-        :key="row.id() + index"
+        :key="row.identifier() + index"
       >
         {{ cell }}
       </td>

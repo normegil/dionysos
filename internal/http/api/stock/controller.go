@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/normegil/dionysos"
 	error2 "github.com/normegil/dionysos/internal/http/error"
+	"github.com/normegil/dionysos/internal/http/model"
 	"net/http"
 	"strconv"
 )
@@ -23,15 +24,22 @@ func (c Controller) Routes() http.Handler {
 }
 
 func (c Controller) loadAll(w http.ResponseWriter, _ *http.Request) {
-	items := make([]dionysos.Item, 0)
+	loadedItems := make([]dionysos.Item, 0)
 	for i := 0; i < 10; i++ {
-		items = append(items, dionysos.Item{
+		loadedItems = append(loadedItems, dionysos.Item{
 			ID:   uuid.New(),
 			Name: "Item" + strconv.Itoa(i),
 		})
 	}
 
-	bytes, err := json.Marshal(items)
+	items := make([]interface{}, 0)
+	for _, item := range loadedItems {
+		items = append(items, item)
+	}
+
+	response := model.CollectionResponse{Items: items}
+
+	bytes, err := json.Marshal(response)
 	if err != nil {
 		c.ErrHandler.Handle(w, err)
 		return
