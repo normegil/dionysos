@@ -7,6 +7,7 @@ import (
 	"github.com/normegil/dionysos"
 	"github.com/normegil/dionysos/internal/http/api/stock"
 	error2 "github.com/normegil/dionysos/internal/http/error"
+	"github.com/normegil/dionysos/internal/http/model"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -25,8 +26,16 @@ func TestController(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+		var jsonItems json.RawMessage
+		response := model.CollectionResponse{
+			Items: &jsonItems,
+		}
+		parseResponse(t, resp, &response)
+
 		var items []dionysos.Item
-		parseResponse(t, resp, &items)
+		if err := json.Unmarshal(jsonItems, &items); nil != err {
+			t.Fatal(fmt.Errorf("could not unmarshall '%+v': %w", items, err))
+		}
 
 		expectedItemNames := make([]string, 0)
 		for i := 0; i < 10; i++ {
@@ -35,7 +44,6 @@ func TestController(t *testing.T) {
 		if len(items) != len(expectedItemNames) {
 			t.Errorf("Wrong number of items {Expected:%d;Got:%d}", len(expectedItemNames), len(items))
 		}
-
 		for _, searched := range expectedItemNames {
 			if !exist(searched, items) {
 				t.Errorf("Expected item not found: %s", searched)
@@ -54,7 +62,7 @@ func parseResponse(t testing.TB, resp *http.Response, result interface{}) {
 		t.Fatal(err)
 	}
 	if err := json.Unmarshal(bodyBytes, result); nil != err {
-		t.Fatal(err)
+		t.Fatal(fmt.Errorf("could not unmarshall '%s': %w", string(bodyBytes), err))
 	}
 }
 

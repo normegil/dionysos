@@ -1,6 +1,8 @@
 package dionysos
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+)
 
 type Item struct {
 	ID   uuid.UUID `json:"id"`
