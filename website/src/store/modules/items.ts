@@ -6,6 +6,9 @@ import { AxiosError, AxiosResponse } from "axios";
 
 export interface ItemsState {
   items: Item[];
+  itemsPerPage: number;
+  currentIndex: number;
+  totalItems: number;
 }
 
 interface ItemCollection {
@@ -25,7 +28,10 @@ export const ITEMS: Module<ItemsState, RootState> = {
       new Item("1", "Oignons"),
       new Item("2", "Carotte"),
       new Item("3", "Spaggethi")
-    ]
+    ],
+    currentIndex: 0,
+    itemsPerPage: 10,
+    totalItems: 4
   },
   mutations: {
     set: (state, items: Item[]): void => {

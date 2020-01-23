@@ -6,7 +6,11 @@
         <h1 class="content__title-text">{{ $t("ui.menu.main.items") }}</h1>
       </div>
       <div class="content__container flex-content">
-        <Pagination current-index="1" item-per-page="2" number-of-items="3" />
+        <Pagination
+          :current-index="currentIndex"
+          :item-per-page="itemsPerPage"
+          :number-of-items="totalItems"
+        />
         <SpecificSearchField
           class="content__search-field"
           placeholder-key="ui.components.specific-search-field.items.placeholder"
@@ -35,6 +39,18 @@ import SpecificSearchField from "../components/SpecificSearchField.vue";
 export default class PageItem extends Vue {
   get items(): Item[] {
     return this.$store.state.items.items;
+  }
+
+  get currentIndex(): number {
+    return this.$store.state.items.currentIndex;
+  }
+
+  get totalItems(): number {
+    return this.$store.state.items.totalItems;
+  }
+
+  get itemsPerPage(): number {
+    return this.$store.state.items.itemsPerPage;
   }
 
   get headings(): string[] {
