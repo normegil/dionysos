@@ -10,14 +10,14 @@ steps:
       - npm install --prefix website
   - name: lint-ui
     image: node:13-alpine
-    depends_on:
-      - ui-dependencies
+#    depends_on:
+#      - ui-dependencies
     commands:
       - npm run lint --prefix website
   - name: build-ui
     image: node:13-alpine
-    depends_on:
-      - lint-ui
+#    depends_on:
+#      - lint-ui
     commands:
       - npm run build:prod --prefix website
   - name: test-go
@@ -33,17 +33,17 @@ steps:
       - sh ./linter.sh
   - name: generate-go
     image: golang:1.13-stretch
-    depends_on:
-      - build-ui
-      - lint-go
+#    depends_on:
+#      - build-ui
+#      - lint-go
     commands:
       - go get github.com/markbates/pkger/cmd/pkger
       - pkger -o cmd
   - name: build
     image: golang:1.13-stretch
-    depends_on:
-      - test-go
-      - generate-go
+#    depends_on:
+#      - test-go
+#      - generate-go
     commands:
       - env GOOS=linux GOARCH=amd64 go build -o ./dist/dionysos-server.linux-amd64 ./cmd/main.go
       - env GOOS=linux GOARCH=arm64 go build -o ./dist/dionysos-server.linux-arm64 ./cmd/main.go
