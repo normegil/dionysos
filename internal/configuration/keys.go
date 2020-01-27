@@ -36,4 +36,39 @@ var (
 			Name:      "port",
 		},
 	}
+	KeyDatabaseAddress = Key{
+		Name:        "database.address",
+		Description: "address to connect to database.",
+		CommandLine: CommandLineOption{
+			Name: "dbhost",
+		},
+	}
+	KeyDatabasePort = Key{
+		Name:        "database.port",
+		Description: "port to connect to database.",
+		CommandLine: CommandLineOption{
+			Name: "dbport",
+		},
+	}
+	KeyDatabaseUser = Key{
+		Name:        "database.user",
+		Description: "user to connect to database.",
+		CommandLine: CommandLineOption{
+			Name: "dbuser",
+		},
+	}
+	KeyDatabasePassword = Key{
+		Name:        "database.password",
+		Description: "password to connect to database.",
+		CommandLine: CommandLineOption{
+			Name: "dbpassword",
+		},
+	}
+	KeyDatabaseName = Key{
+		Name:        "database.name",
+		Description: "database name to use. The database will be created if required.",
+		CommandLine: CommandLineOption{
+			Name: "dbname",
+		},
+	}
 )

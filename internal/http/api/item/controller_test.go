@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/go-chi/chi"
 	"github.com/normegil/dionysos"
-	"github.com/normegil/dionysos/internal/http/api/stock"
+	"github.com/normegil/dionysos/internal/http/api/item"
 	error2 "github.com/normegil/dionysos/internal/http/error"
 	"github.com/normegil/dionysos/internal/http/model"
 	"io/ioutil"

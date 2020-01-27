@@ -3,7 +3,7 @@ package api
 import (
 	"github.com/go-chi/chi"
 	"github.com/markbates/pkger"
-	"github.com/normegil/dionysos/internal/http/api/stock"
+	"github.com/normegil/dionysos/internal/http/api/item"
 	error2 "github.com/normegil/dionysos/internal/http/error"
 	"net/http"
 )
