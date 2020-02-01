@@ -2,12 +2,15 @@ package commands
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
+	"github.com/go-chi/chi"
 	"github.com/markbates/pkger"
 	"github.com/normegil/dionysos/internal/configuration"
+	"github.com/normegil/dionysos/internal/database"
 	internalHTTP "github.com/normegil/dionysos/internal/http"
 	"github.com/normegil/dionysos/internal/http/api"
-	error2 "github.com/normegil/dionysos/internal/http/error"
+	httperror "github.com/normegil/dionysos/internal/http/error"
 	"github.com/normegil/dionysos/internal/http/middleware"
 	"github.com/normegil/postgres"
 	"github.com/rs/zerolog/log"
@@ -53,19 +56,19 @@ func listen() (*cobra.Command, error) {
 	}
 
 	databaseUserKey := configuration.KeyDatabaseUser
-	listenCmd.Flags().IntP(databaseUserKey.CommandLine.Name, databaseUserKey.CommandLine.Shorthand, 5432, databaseUserKey.Description)
+	listenCmd.Flags().StringP(databaseUserKey.CommandLine.Name, databaseUserKey.CommandLine.Shorthand, "postgres", databaseUserKey.Description)
 	if err := viper.BindPFlag(databaseUserKey.Name, listenCmd.Flags().Lookup(databaseUserKey.CommandLine.Name)); err != nil {
 		return nil, fmt.Errorf("binding parameter %s: %w", databaseUserKey.Name, err)
 	}
 
 	databasePasswordKey := configuration.KeyDatabasePassword
-	listenCmd.Flags().IntP(databasePasswordKey.CommandLine.Name, databasePasswordKey.CommandLine.Shorthand, 5432, databasePasswordKey.Description)
+	listenCmd.Flags().StringP(databasePasswordKey.CommandLine.Name, databasePasswordKey.CommandLine.Shorthand, "postgres", databasePasswordKey.Description)
 	if err := viper.BindPFlag(databasePasswordKey.Name, listenCmd.Flags().Lookup(databasePasswordKey.CommandLine.Name)); err != nil {
 		return nil, fmt.Errorf("binding parameter %s: %w", databasePasswordKey.Name, err)
 	}
 
 	databaseNameKey := configuration.KeyDatabaseName
-	listenCmd.Flags().IntP(databaseNameKey.CommandLine.Name, databaseNameKey.CommandLine.Shorthand, 5432, databaseNameKey.Description)
+	listenCmd.Flags().StringP(databaseNameKey.CommandLine.Name, databaseNameKey.CommandLine.Shorthand, "dionysos", databaseNameKey.Description)
 	if err := viper.BindPFlag(databaseNameKey.Name, listenCmd.Flags().Lookup(databaseNameKey.CommandLine.Name)); err != nil {
 		return nil, fmt.Errorf("binding parameter %s: %w", databaseNameKey.Name, err)
 	}
@@ -77,23 +80,27 @@ func listenRun(_ *cobra.Command, _ []string) {
 	stopHTTPServer := make(chan os.Signal, 1)
 	signal.Notify(stopHTTPServer, os.Interrupt)
 
-	db, err := postgres.New(postgres.Configuration{
-		Address:  viper.GetString(configuration.KeyDatabaseAddress.Name),
-		Port:     viper.GetInt(configuration.KeyDatabasePort.Name),
-		User:     viper.GetString(configuration.KeyDatabaseUser.Name),
-		Password: viper.GetString(configuration.KeyDatabasePassword.Name),
-		Database: viper.GetString(configuration.KeyDatabaseName.Name),
-	})
+	dbCfg := getDatabaseConfiguration()
+	db, err := postgres.New(dbCfg)
 	if err != nil {
 		log.Fatal().Err(err).Msg("creating database connection failed")
 	}
+	defer func() {
+		if err := db.Close(); nil != err {
+			log.Error().Err(err).Msg("Could not close database connection")
+		}
+	}()
 
 	addr := net.TCPAddr{
 		IP:   net.ParseIP(viper.GetString(configuration.KeyAddress.Name)),
 		Port: viper.GetInt(configuration.KeyPort.Name),
 		Zone: "",
 	}
-	router := internalHTTP.NewRouter(newRoutes())
+	routes, err := newRoutes(db, dbCfg.User)
+	if err != nil {
+		log.Fatal().Err(err).Msg("creating routing rules")
+	}
+	router := internalHTTP.NewRouter(routes)
 	handler := middleware.RequestLogger{Handler: router}
 	closeHttpServer := internalHTTP.ListenAndServe(addr, handler)
 	defer func() {
@@ -107,9 +114,45 @@ func listenRun(_ *cobra.Command, _ []string) {
 	<-stopHTTPServer
 }
 
-func newRoutes() map[string]http.Handler {
+func getDatabaseConfiguration() postgres.Configuration {
+	return postgres.Configuration{
+		Address:  viper.GetString(configuration.KeyDatabaseAddress.Name),
+		Port:     viper.GetInt(configuration.KeyDatabasePort.Name),
+		User:     viper.GetString(configuration.KeyDatabaseUser.Name),
+		Password: viper.GetString(configuration.KeyDatabasePassword.Name),
+		Database: viper.GetString(configuration.KeyDatabaseName.Name),
+	}
+}
+
+func newRoutes(db *sql.DB, owner string) (map[string]http.Handler, error) {
 	routes := make(map[string]http.Handler)
-	routes["/api"] = api.Controller{ErrHandler: error2.HTTPErrorHandler{}}.Routes()
 	routes["/"] = http.FileServer(pkger.Dir("/website/dist"))
-	return routes
+	apiHandler, err := apiRoutes(db, owner)
+	if err != nil {
+		return nil, fmt.Errorf("creating api handler: %w", err)
+	}
+	routes["/api"] = apiHandler
+	return routes, nil
+}
+
+func apiRoutes(db *sql.DB, owner string) (http.Handler, error) {
+	apiRoutes := make(map[string]http.Handler)
+
+	itemDAO, err := database.NewItemDAO(db, owner)
+	if err != nil {
+		return nil, fmt.Errorf("creating item dao: %w", err)
+	}
+	apiRoutes["/items"] = api.ItemController{
+		ItemDAO:    itemDAO,
+		ErrHandler: httperror.HTTPErrorHandler{},
+	}.Route()
+
+	return internalHTTP.MultiController{
+		Routes: apiRoutes,
+		OnRegister: func(rt *chi.Mux) {
+			rt.Get("/*", func(w http.ResponseWriter, r *http.Request) {
+				http.StripPrefix("/api", http.FileServer(pkger.Dir("/api"))).ServeHTTP(w, r)
+			})
+		},
+	}.Route(), nil
 }

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/gchaincl/dotsql"
+	"github.com/google/uuid"
 	"github.com/markbates/pkger"
 	"github.com/normegil/dionysos"
 	"github.com/normegil/postgres"
@@ -15,8 +16,8 @@ type ItemDAO struct {
 	queries map[string]string
 }
 
-func (dao ItemDAO) NewItemDAO(db *sql.DB, owner string) (*ItemDAO, error) {
-	sqlDir := pkger.Dir("sql/")
+func NewItemDAO(db *sql.DB, owner string) (*ItemDAO, error) {
+	sqlDir := pkger.Dir("/internal/database/sql")
 	fileName := "item.sql"
 	file, err := sqlDir.Open(fileName)
 	if err != nil {
@@ -58,11 +59,19 @@ func (dao *ItemDAO) LoadAll() ([]dionysos.Item, error) {
 
 	items := make([]dionysos.Item, 0)
 	for rows.Next() {
-		var item dionysos.Item
-		if err := rows.Scan(&item); nil != err {
+		var idStr string
+		var name string
+		if err := rows.Scan(&idStr, &name); nil != err {
 			return nil, fmt.Errorf("scanning rows of item.'%s': %w", queryName, err)
 		}
-		items = append(items, item)
+		id, err := uuid.Parse(idStr)
+		if err != nil {
+			return nil, fmt.Errorf("cannot convert id '%s' to UUID : %w", idStr, err)
+		}
+		items = append(items, dionysos.Item{
+			ID:   id,
+			Name: name,
+		})
 	}
 
 	if err := rows.Err(); nil != err {

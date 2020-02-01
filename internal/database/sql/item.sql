@@ -14,8 +14,7 @@ CREATE TABLE item
 );
 
 -- name:Table-Set-Owner
-ALTER TABLE item
-    OWNER TO postgres;
+ALTER TABLE item OWNER TO $1;
 
 -- name:Select-All
 SELECT *
