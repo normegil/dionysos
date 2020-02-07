@@ -79,3 +79,11 @@ func (dao *ItemDAO) LoadAll() ([]dionysos.Item, error) {
 	}
 	return items, nil
 }
+
+func (dao *ItemDAO) Insert(item dionysos.Item) error {
+	queryName := "Insert"
+	if _, err := dao.db.Exec(dao.queries[queryName], item.Name); err != nil {
+		return fmt.Errorf("inserting %+v: %w", item, err)
+	}
+	return nil
+}

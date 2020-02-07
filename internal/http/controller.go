@@ -5,6 +5,10 @@ import (
 	"net/http"
 )
 
+type Controller interface {
+	Route() http.Handler
+}
+
 type MultiController struct {
 	Routes     map[string]http.Handler
 	OnRegister func(rt *chi.Mux)

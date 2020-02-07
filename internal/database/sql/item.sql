@@ -19,3 +19,7 @@ ALTER TABLE item OWNER TO $1;
 -- name:Select-All
 SELECT *
 FROM item;
+
+--name:Insert
+INSERT INTO item(id, name)
+VALUES (gen_random_uuid(), $1)

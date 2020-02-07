@@ -2,10 +2,11 @@ package commands
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
+	"github.com/brianvoe/gofakeit"
 	"github.com/go-chi/chi"
 	"github.com/markbates/pkger"
+	"github.com/normegil/dionysos"
 	"github.com/normegil/dionysos/internal/configuration"
 	"github.com/normegil/dionysos/internal/database"
 	internalHTTP "github.com/normegil/dionysos/internal/http"
@@ -73,6 +74,12 @@ func listen() (*cobra.Command, error) {
 		return nil, fmt.Errorf("binding parameter %s: %w", databaseNameKey.Name, err)
 	}
 
+	dummyDataKey := configuration.KeyDummyData
+	listenCmd.Flags().BoolP(dummyDataKey.CommandLine.Name, dummyDataKey.CommandLine.Shorthand, true, dummyDataKey.Description)
+	if err := viper.BindPFlag(dummyDataKey.Name, listenCmd.Flags().Lookup(dummyDataKey.CommandLine.Name)); err != nil {
+		return nil, fmt.Errorf("binding parameter %s: %w", dummyDataKey.Name, err)
+	}
+
 	return listenCmd, nil
 }
 
@@ -91,12 +98,45 @@ func listenRun(_ *cobra.Command, _ []string) {
 		}
 	}()
 
+	itemDAO, err := database.NewItemDAO(db, dbCfg.User)
+	if err != nil {
+		log.Fatal().Err(err).Msg("creating item dao")
+	}
+
+	if viper.GetBool(configuration.KeyDummyData.Name) {
+		log.Info().Msg("insert dummy data")
+		const dummyItemNb = 50
+
+		for i := 0; i < dummyItemNb; i++ {
+			item := dionysos.Item{Name: gofakeit.BeerName()}
+			if err := itemDAO.Insert(item); nil != err {
+				log.Fatal().Err(err).Msgf("inserting %+v", item)
+			}
+		}
+	}
+
+	apiRoutes := make(map[string]http.Handler)
+	apiRoutes["/item"] = api.ItemController{
+		ItemDAO:    itemDAO,
+		ErrHandler: httperror.HTTPErrorHandler{},
+	}.Route()
+	apiCtrl := internalHTTP.MultiController{
+		Routes: apiRoutes,
+		OnRegister: func(rt *chi.Mux) {
+			rt.Get("/*", func(w http.ResponseWriter, r *http.Request) {
+				http.StripPrefix("/api", http.FileServer(pkger.Dir("/api"))).ServeHTTP(w, r)
+			})
+		},
+	}
+	routes := make(map[string]http.Handler)
+	routes["/api"] = apiCtrl.Route()
+	routes["/"] = http.FileServer(pkger.Dir("/website/dist"))
+
 	addr := net.TCPAddr{
 		IP:   net.ParseIP(viper.GetString(configuration.KeyAddress.Name)),
 		Port: viper.GetInt(configuration.KeyPort.Name),
 		Zone: "",
 	}
-	routes, err := newRoutes(db, dbCfg.User)
 	if err != nil {
 		log.Fatal().Err(err).Msg("creating routing rules")
 	}
@@ -122,37 +162,4 @@ func getDatabaseConfiguration() postgres.Configuration {
 		Password: viper.GetString(configuration.KeyDatabasePassword.Name),
 		Database: viper.GetString(configuration.KeyDatabaseName.Name),
 	}
-}
-
-func newRoutes(db *sql.DB, owner string) (map[string]http.Handler, error) {
-	routes := make(map[string]http.Handler)
-	routes["/"] = http.FileServer(pkger.Dir("/website/dist"))
-	apiHandler, err := apiRoutes(db, owner)
-	if err != nil {
-		return nil, fmt.Errorf("creating api handler: %w", err)
-	}
-	routes["/api"] = apiHandler
-	return routes, nil
-}
-
-func apiRoutes(db *sql.DB, owner string) (http.Handler, error) {
-	apiRoutes := make(map[string]http.Handler)
-
-	itemDAO, err := database.NewItemDAO(db, owner)
-	if err != nil {
-		return nil, fmt.Errorf("creating item dao: %w", err)
-	}
-	apiRoutes["/items"] = api.ItemController{
-		ItemDAO:    itemDAO,
-		ErrHandler: httperror.HTTPErrorHandler{},
-	}.Route()
-
-	return internalHTTP.MultiController{
-		Routes: apiRoutes,
-		OnRegister: func(rt *chi.Mux) {
-			rt.Get("/*", func(w http.ResponseWriter, r *http.Request) {
-				http.StripPrefix("/api", http.FileServer(pkger.Dir("/api"))).ServeHTTP(w, r)
-			})
-		},
-	}.Route(), nil
 }
