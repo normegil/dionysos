@@ -75,7 +75,7 @@ func listen() (*cobra.Command, error) {
 	}
 
 	dummyDataKey := configuration.KeyDummyData
-	listenCmd.Flags().BoolP(dummyDataKey.CommandLine.Name, dummyDataKey.CommandLine.Shorthand, true, dummyDataKey.Description)
+	listenCmd.Flags().BoolP(dummyDataKey.CommandLine.Name, dummyDataKey.CommandLine.Shorthand, false, dummyDataKey.Description)
 	if err := viper.BindPFlag(dummyDataKey.Name, listenCmd.Flags().Lookup(dummyDataKey.CommandLine.Name)); err != nil {
 		return nil, fmt.Errorf("binding parameter %s: %w", dummyDataKey.Name, err)
 	}
@@ -116,7 +116,7 @@ func listenRun(_ *cobra.Command, _ []string) {
 	}
 
 	apiRoutes := make(map[string]http.Handler)
-	apiRoutes["/item"] = api.ItemController{
+	apiRoutes["/items"] = api.ItemController{
 		ItemDAO:    itemDAO,
 		ErrHandler: httperror.HTTPErrorHandler{},
 	}.Route()

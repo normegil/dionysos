@@ -72,7 +72,7 @@ var (
 		},
 	}
 	KeyDummyData = Key{
-		Name:        "data.dummy",
+		Name:        "database.data.dummy",
 		Description: "Insert dummy data in database.",
 		CommandLine: CommandLineOption{
 			Name: "dummy",
