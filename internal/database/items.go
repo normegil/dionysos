@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/markbates/pkger"
 	"github.com/normegil/dionysos"
+	"github.com/normegil/dionysos/internal/model"
 	"github.com/normegil/postgres"
 	"github.com/rs/zerolog/log"
 )
@@ -45,9 +46,9 @@ func NewItemDAO(db *sql.DB, owner string) (*ItemDAO, error) {
 	return &ItemDAO{db, queries}, nil
 }
 
-func (dao *ItemDAO) LoadAll() ([]dionysos.Item, error) {
+func (dao *ItemDAO) LoadAll(opts model.CollectionOptions) ([]dionysos.Item, error) {
 	queryName := "Select-All"
-	rows, err := dao.db.Query(dao.queries[queryName])
+	rows, err := dao.db.Query(dao.queries[queryName], opts.Limit.Number(), opts.Offset.Number())
 	if err != nil {
 		return nil, fmt.Errorf("query failed item.'%s': %w", queryName, err)
 	}

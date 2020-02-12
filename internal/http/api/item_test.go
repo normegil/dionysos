@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"github.com/go-chi/chi"
 	"github.com/normegil/dionysos"
+	http2 "github.com/normegil/dionysos/internal/http"
 	"github.com/normegil/dionysos/internal/http/api"
 	error2 "github.com/normegil/dionysos/internal/http/error"
-	"github.com/normegil/dionysos/internal/http/model"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -27,7 +27,7 @@ func TestItemController(t *testing.T) {
 			t.Fatal(err)
 		}
 		var jsonItems json.RawMessage
-		response := model.CollectionResponse{
+		response := http2.CollectionResponse{
 			Items: &jsonItems,
 		}
 		parseResponse(t, resp, &response)

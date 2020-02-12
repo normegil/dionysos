@@ -18,7 +18,9 @@ ALTER TABLE item OWNER TO $1;
 
 -- name:Select-All
 SELECT *
-FROM item;
+FROM item
+ORDER BY name
+LIMIT $1 OFFSET $2;
 
 --name:Insert
 INSERT INTO item(id, name)
