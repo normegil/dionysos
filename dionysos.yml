@@ -1,6 +1,0 @@
-log:
-  color: true
-database:
-  password: root
-  data:
-    dummy: false
