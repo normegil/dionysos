@@ -4,6 +4,7 @@
 bin/
 node_modules/
 dist/
+dionysos.yml
 
 ### Go ###
 # Binaries for programs and plugins
