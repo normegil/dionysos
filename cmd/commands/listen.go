@@ -156,10 +156,11 @@ func listenRun(_ *cobra.Command, _ []string) {
 
 func getDatabaseConfiguration() postgres.Configuration {
 	return postgres.Configuration{
-		Address:  viper.GetString(configuration.KeyDatabaseAddress.Name),
-		Port:     viper.GetInt(configuration.KeyDatabasePort.Name),
-		User:     viper.GetString(configuration.KeyDatabaseUser.Name),
-		Password: viper.GetString(configuration.KeyDatabasePassword.Name),
-		Database: viper.GetString(configuration.KeyDatabaseName.Name),
+		Address:            viper.GetString(configuration.KeyDatabaseAddress.Name),
+		Port:               viper.GetInt(configuration.KeyDatabasePort.Name),
+		User:               viper.GetString(configuration.KeyDatabaseUser.Name),
+		Password:           viper.GetString(configuration.KeyDatabasePassword.Name),
+		Database:           viper.GetString(configuration.KeyDatabaseName.Name),
+		RequiredExtentions: database.Extentions,
 	}
 }

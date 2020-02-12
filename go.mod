@@ -12,10 +12,12 @@ require (
 	github.com/go-chi/chi v4.0.2+incompatible
 	github.com/google/uuid v1.1.1
 	github.com/markbates/pkger v0.13.0
-	github.com/normegil/postgres v0.0.0-20200201142914-705d81f4bfcb
+	github.com/normegil/postgres v0.0.0-20200212153307-fcf83d1d55a7
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
 	github.com/rs/zerolog v1.17.2
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.6.1
+	golang.org/x/net v0.0.0-20200202094626-16171245cfb2 // indirect
+	golang.org/x/sys v0.0.0-20200212091648-12a6c2dcc1e4 // indirect
 )
