@@ -1,14 +1,19 @@
 <template>
   <div class="pagination">
-    <a class="pagination__button"><i class="las la-angle-double-left"/></a
-    ><a class="pagination__button"><i class="las la-angle-left"/></a
+    <a class="pagination__button" @click.stop="first"
+      ><i class="las la-angle-double-left"/></a
+    ><a class="pagination__button" @click.stop="previous"
+      ><i class="las la-angle-left"/></a
     ><a
       v-for="page in pages"
       :key="page"
       class="pagination__button pagination__button--number"
       >{{ page }}</a
-    ><a class="pagination__button"><i class="las la-angle-right"/></a
-    ><a class="pagination__button"><i class="las la-angle-double-right"/></a>
+    ><a class="pagination__button" @click.stop="next"
+      ><i class="las la-angle-right"/></a
+    ><a class="pagination__button" @click.stop="last"
+      ><i class="las la-angle-double-right"
+    /></a>
   </div>
 </template>
 
@@ -69,29 +74,41 @@ export default class Pagination extends Vue {
       };
     }
 
-    console.log("A:" + startIndex + " : " + endIndex);
     if (startIndex < 0) {
       const underflow = -startIndex;
       endIndex += underflow;
       startIndex = 0;
     }
 
-    console.log("B:" + startIndex + " : " + endIndex);
     if (endIndex > this.lastPage) {
       const overflow = endIndex - this.lastPage;
       endIndex = this.lastPage;
       startIndex -= overflow;
-      console.log("C:" + startIndex + " : " + endIndex);
       if (startIndex < 0) {
         startIndex = 0;
       }
     }
 
-    console.log("D:" + startIndex + " : " + endIndex);
     return {
       start: startIndex,
       end: endIndex
     };
+  }
+
+  first(): void {
+    this.$emit("first");
+  }
+
+  previous(): void {
+    this.$emit("previous");
+  }
+
+  next(): void {
+    this.$emit("next");
+  }
+
+  last(): void {
+    this.$emit("last");
   }
 }
 </script>
