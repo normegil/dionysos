@@ -43,10 +43,17 @@ func (c ItemController) loadAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	nbItems, err := c.ItemDAO.TotalNumberOfItem()
+	if err != nil {
+		c.ErrHandler.Handle(w, fmt.Errorf("loading number of items: %w", err))
+		return
+	}
+
 	response := internalHTTP.CollectionResponse{
-		Offset: collectionOpts.Offset.Number(),
-		Limit:  collectionOpts.Limit.Number(),
-		Items:  items,
+		Offset:        collectionOpts.Offset.Number(),
+		Limit:         collectionOpts.Limit.Number(),
+		NumberOfItems: nbItems.Number(),
+		Items:         items,
 	}
 
 	bytes, err := json.Marshal(response)
@@ -86,4 +93,5 @@ func (c ItemController) toDefaultCollectionOptions(options *model.CollectionOpti
 
 type ItemDAO interface {
 	LoadAll(options model.CollectionOptions) ([]dionysos.Item, error)
+	TotalNumberOfItem() (*model.Natural, error)
 }

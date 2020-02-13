@@ -13,6 +13,9 @@ export interface ItemsState {
 
 interface ItemCollection {
   items: ItemDTO[];
+  totalSize: number;
+  offset: number;
+  limit: number;
 }
 
 interface ItemDTO {
@@ -30,23 +33,39 @@ export const ITEMS: Module<ItemsState, RootState> = {
       new Item("3", "Spaggethi")
     ],
     currentIndex: 0,
-    itemsPerPage: 10,
+    itemsPerPage: 20,
     totalItems: 4
   },
   mutations: {
-    set: (state, items: Item[]): void => {
-      console.log("set data: " + items);
+    setItems: (state, items: Item[]): void => {
       state.items = items;
+    },
+    setTotalItems: (state, nbItems: number): void => {
+      state.totalItems = nbItems;
+    },
+    setItemsPerPage: (state, itemsPerPage: number): void => {
+      state.itemsPerPage = itemsPerPage;
+    },
+    setCurrentIndex: (state, currentIndex: number): void => {
+      state.currentIndex = currentIndex;
     }
   },
   actions: {
     load: (ctx): void => {
-      HTTP.get("/items")
+      HTTP.get(
+        "/items?limit=" +
+          ctx.state.itemsPerPage +
+          ";offset=" +
+          ctx.state.currentIndex
+      )
         .then((r: AxiosResponse<ItemCollection>) => {
           const itemCollection = r.data.items.map(
             (dto): Item => new Item(dto.id, dto.name)
           );
-          ctx.commit("set", itemCollection);
+          ctx.commit("setItems", itemCollection);
+          ctx.commit("setTotalItems", r.data.totalSize);
+          ctx.commit("setItemsPerPage", r.data.limit);
+          ctx.commit("setCurrentIndex", r.data.offset);
         })
         .catch((err: AxiosError) => {
           console.log(err);

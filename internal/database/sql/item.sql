@@ -22,6 +22,10 @@ FROM item
 ORDER BY name
 LIMIT $1 OFFSET $2;
 
+-- name:Number-Of-Entries
+SELECT count(*)
+FROM item;
+
 --name:Insert
 INSERT INTO item(id, name)
 VALUES (gen_random_uuid(), $1)

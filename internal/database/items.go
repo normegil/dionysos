@@ -81,6 +81,16 @@ func (dao *ItemDAO) LoadAll(opts model.CollectionOptions) ([]dionysos.Item, erro
 	return items, nil
 }
 
+func (dao ItemDAO) TotalNumberOfItem() (*model.Natural, error) {
+	queryName := "Number-Of-Entries"
+	row := dao.db.QueryRow(dao.queries[queryName])
+	var total int
+	if err := row.Scan(&total); nil != err {
+		return nil, fmt.Errorf("counting number of items: %w", err)
+	}
+	return model.NewNatural(total)
+}
+
 func (dao *ItemDAO) Insert(item dionysos.Item) error {
 	queryName := "Insert"
 	if _, err := dao.db.Exec(dao.queries[queryName], item.Name); err != nil {

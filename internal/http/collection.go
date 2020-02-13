@@ -6,9 +6,10 @@ import (
 )
 
 type CollectionResponse struct {
-	Offset int         `json:"offset"`
-	Limit  int         `json:"limit"`
-	Items  interface{} `json:"items"`
+	Offset        int         `json:"offset"`
+	Limit         int         `json:"limit"`
+	NumberOfItems int         `json:"totalSize"`
+	Items         interface{} `json:"items"`
 }
 
 func ToCollectionOptions(parameters QueryParameters) (*model.CollectionOptions, error) {
@@ -34,7 +35,7 @@ func ToNatural(parameters QueryParameters, key string) (*model.Natural, error) {
 		return nil, err
 	}
 	if "" == limitStr {
-		return model.NewNatural(0), nil
+		return model.NewNatural(0)
 	}
 	limit, err := strconv.Atoi(limitStr)
 	if err != nil {
