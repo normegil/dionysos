@@ -8,6 +8,7 @@
       v-for="page in pages"
       :key="page"
       class="pagination__button pagination__button--number"
+      :class="{ 'pagination__button--active': page === currentPage }"
       >{{ page }}</a
     ><a class="pagination__button" @click.stop="next"
       ><i class="las la-angle-right"/></a
@@ -141,10 +142,16 @@ export default class Pagination extends Vue {
 
     &--number {
       padding: 0.5rem 1rem;
+      color: $color-grey-dark;
+    }
+
+    &--active {
+      font-weight: bold;
+      color: $color-grey-dark-3;
     }
 
     &:hover {
-      border: 1px solid $color-grey-dark;
+      color: $color-grey-dark-3;
     }
   }
 }
