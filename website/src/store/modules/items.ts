@@ -1,8 +1,8 @@
-import {Module} from "vuex";
+import { Module } from "vuex";
 import Item from "../../model/Item";
-import {RootState} from "../model";
-import {HTTP} from "../http";
-import {AxiosError, AxiosResponse} from "axios";
+import { RootState } from "../model";
+import { HTTP } from "../http";
+import { AxiosError, AxiosResponse } from "axios";
 
 export interface ItemsState {
   items: Item[];
@@ -53,6 +53,9 @@ export const ITEMS: Module<ItemsState, RootState> = {
         numberOfPages += 1;
       }
       return numberOfPages;
+    },
+    currentPage: (state): number => {
+      return Math.floor(state.currentIndex / state.itemsPerPage);
     },
     getPageFirstIndex: state => (pageNb: number): number => {
       return state.itemsPerPage * pageNb;

@@ -7,9 +7,9 @@
       </div>
       <div class="content__container flex-content">
         <Pagination
-          :current-index="currentIndex"
+          :current-page="currentPage"
           :item-per-page="itemsPerPage"
-          :number-of-items="totalItems"
+          :number-of-pages="numberOfPages"
           @first="first"
           @previous="previous"
           @next="next"
@@ -46,12 +46,12 @@ export default class PageItem extends Vue {
     return this.$store.state.items.items;
   }
 
-  get currentIndex(): number {
-    return this.$store.state.items.currentIndex;
+  get numberOfPages(): number {
+    return this.$store.getters["items/numberOfPages"];
   }
 
-  get totalItems(): number {
-    return this.$store.state.items.totalItems;
+  get currentPage(): number {
+    return this.$store.getters["items/currentPage"];
   }
 
   get itemsPerPage(): number {

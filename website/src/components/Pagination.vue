@@ -26,13 +26,10 @@ import { Prop } from "vue-property-decorator";
 @Component
 export default class Pagination extends Vue {
   @Prop({ required: true })
-  numberOfItems!: number;
+  numberOfPages!: number;
 
   @Prop({ required: true })
-  itemPerPage!: number;
-
-  @Prop({ required: true })
-  currentIndex!: number;
+  currentPage!: number;
 
   @Prop({ default: 5, required: false })
   numberDisplayedPage = 5;
@@ -46,22 +43,8 @@ export default class Pagination extends Vue {
     return numbers;
   }
 
-  get currentPage(): number {
-    let currentPage = Math.floor(this.currentIndex / this.itemPerPage);
-    const overflow = this.currentIndex % this.itemPerPage;
-    if (overflow !== 0) {
-      currentPage += 1;
-    }
-    return currentPage;
-  }
-
   get lastPage(): number {
-    let lastPage = Math.floor(this.numberOfItems / this.itemPerPage);
-    const divisionOverflow = this.numberOfItems % this.itemPerPage;
-    if (divisionOverflow === 0) {
-      lastPage -= 1;
-    }
-    return lastPage;
+    return this.numberOfPages - 1;
   }
 
   pageLimits(): { start: number; end: number } {
