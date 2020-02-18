@@ -11,13 +11,6 @@ export interface ItemsState {
   totalItems: number;
 }
 
-export enum PageDirection {
-  FIRST,
-  PREVIOUS,
-  NEXT,
-  LAST
-}
-
 interface ItemCollection {
   items: ItemDTO[];
   totalSize: number;
@@ -101,22 +94,8 @@ export const ITEMS: Module<ItemsState, RootState> = {
           console.log(err);
         });
     },
-    changePage: (ctx, direction: PageDirection): void => {
-      let newIndex = 0;
-      switch (direction) {
-        case PageDirection.FIRST:
-          newIndex = 0;
-          break;
-        case PageDirection.PREVIOUS:
-          newIndex = ctx.state.currentIndex - ctx.state.itemsPerPage;
-          break;
-        case PageDirection.NEXT:
-          newIndex = ctx.state.currentIndex + ctx.state.itemsPerPage;
-          break;
-        case PageDirection.LAST:
-          newIndex = ctx.getters.lastPageFirstIndex;
-          break;
-      }
+    changePage: (ctx, pageNb: number): void => {
+      const newIndex = pageNb * ctx.state.itemsPerPage;
       ctx
         .dispatch("setCurrentIndex", newIndex)
         .then(() => {

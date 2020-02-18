@@ -1,18 +1,19 @@
 <template>
   <div class="pagination">
-    <a class="pagination__button" @click.stop="first"
+    <a class="pagination__button" @click.stop="changePage(0)"
       ><i class="las la-angle-double-left"/></a
-    ><a class="pagination__button" @click.stop="previous"
+    ><a class="pagination__button" @click.stop="changePage(currentPage - 1)"
       ><i class="las la-angle-left"/></a
     ><a
       v-for="page in pages"
       :key="page"
       class="pagination__button pagination__button--number"
       :class="{ 'pagination__button--active': page === currentPage }"
+      @click.stop="changePage(page)"
       >{{ page }}</a
-    ><a class="pagination__button" @click.stop="next"
+    ><a class="pagination__button" @click.stop="changePage(currentPage + 1)"
       ><i class="las la-angle-right"/></a
-    ><a class="pagination__button" @click.stop="last"
+    ><a class="pagination__button" @click.stop="changePage(lastPage)"
       ><i class="las la-angle-double-right"
     /></a>
   </div>
@@ -79,20 +80,8 @@ export default class Pagination extends Vue {
     };
   }
 
-  first(): void {
-    this.$emit("first");
-  }
-
-  previous(): void {
-    this.$emit("previous");
-  }
-
-  next(): void {
-    this.$emit("next");
-  }
-
-  last(): void {
-    this.$emit("last");
+  changePage(pageNb: number): void {
+    this.$emit("change-page", pageNb);
   }
 }
 </script>

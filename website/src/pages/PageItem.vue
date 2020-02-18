@@ -10,10 +10,7 @@
           :current-page="currentPage"
           :item-per-page="itemsPerPage"
           :number-of-pages="numberOfPages"
-          @first="first"
-          @previous="previous"
-          @next="next"
-          @last="last"
+          @change-page="changePage"
         />
         <SpecificSearchField
           class="content__search-field"
@@ -37,7 +34,6 @@ import Item from "../model/Item";
 import Button from "../components/Button.vue";
 import Pagination from "../components/Pagination.vue";
 import SpecificSearchField from "../components/SpecificSearchField.vue";
-import { PageDirection } from "../store/modules/items";
 @Component({
   components: { SpecificSearchField, Pagination, Button, Table, SearchField }
 })
@@ -66,20 +62,8 @@ export default class PageItem extends Vue {
     this.$store.dispatch("items/load");
   }
 
-  first(): void {
-    this.$store.dispatch("items/changePage", PageDirection.FIRST);
-  }
-
-  previous(): void {
-    this.$store.dispatch("items/changePage", PageDirection.PREVIOUS);
-  }
-
-  next(): void {
-    this.$store.dispatch("items/changePage", PageDirection.NEXT);
-  }
-
-  last(): void {
-    this.$store.dispatch("items/changePage", PageDirection.LAST);
+  changePage(pageNb: number): void {
+    this.$store.dispatch("items/changePage", pageNb);
   }
 }
 </script>
