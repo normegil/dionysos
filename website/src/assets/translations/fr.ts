@@ -14,6 +14,9 @@ export const FRENCH_TRANSLATION = {
         }
       }
     },
+    button: {
+      search: "Recherche"
+    },
     components: {
       "search-field": {
         placeholder: "Rechercher les stockages, les objets, ..."

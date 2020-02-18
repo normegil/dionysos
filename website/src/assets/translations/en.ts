@@ -14,6 +14,9 @@ export const ENGLISH_TRANSLATION = {
         }
       }
     },
+    button: {
+      search: "Search"
+    },
     components: {
       "search-field": {
         placeholder: "Search storages, items, ..."
