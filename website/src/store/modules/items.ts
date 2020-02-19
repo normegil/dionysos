@@ -9,6 +9,7 @@ export interface ItemsState {
   itemsPerPage: number;
   currentIndex: number;
   totalItems: number;
+  filter: string;
 }
 
 interface ItemCollection {
@@ -16,6 +17,7 @@ interface ItemCollection {
   totalSize: number;
   offset: number;
   limit: number;
+  filter: string;
 }
 
 interface ItemDTO {
@@ -34,7 +36,8 @@ export const ITEMS: Module<ItemsState, RootState> = {
     ],
     currentIndex: 0,
     itemsPerPage: 20,
-    totalItems: 4
+    totalItems: 4,
+    filter: ""
   },
   getters: {
     isPageFullyContained: (state): boolean => {
@@ -71,24 +74,24 @@ export const ITEMS: Module<ItemsState, RootState> = {
     },
     setCurrentIndex: (state, currentIndex: number): void => {
       state.currentIndex = currentIndex;
+    },
+    setFilter: (state, filter: string): void => {
+      state.filter = filter;
     }
   },
   actions: {
     load: (ctx): void => {
-      HTTP.get(
+      let url =
         "/items?limit=" +
-          ctx.state.itemsPerPage +
-          ";offset=" +
-          ctx.state.currentIndex
-      )
+        ctx.state.itemsPerPage +
+        ";offset=" +
+        ctx.state.currentIndex;
+      if (ctx.state.filter !== "") {
+        url += ";filter=" + ctx.state.filter;
+      }
+      HTTP.get(url)
         .then((r: AxiosResponse<ItemCollection>) => {
-          const itemCollection = r.data.items.map(
-            (dto): Item => new Item(dto.id, dto.name)
-          );
-          ctx.commit("setItems", itemCollection);
-          ctx.commit("setTotalItems", r.data.totalSize);
-          ctx.commit("setItemsPerPage", r.data.limit);
-          return ctx.dispatch("setCurrentIndex", r.data.offset);
+          return ctx.dispatch("refreshItems", r.data);
         })
         .catch((err: AxiosError) => {
           console.log(err);
@@ -114,6 +117,21 @@ export const ITEMS: Module<ItemsState, RootState> = {
         toSet = 0;
       }
       ctx.commit("setCurrentIndex", toSet);
+    },
+    setFilter: (ctx, filter: string): void => {
+      ctx.commit("setFilter", filter);
+    },
+    refreshItems: (ctx, data: ItemCollection): void => {
+      const itemCollection = data.items.map(
+        (dto): Item => new Item(dto.id, dto.name)
+      );
+      ctx.commit("setItems", itemCollection);
+      ctx.commit("setTotalItems", data.totalSize);
+      ctx.commit("setItemsPerPage", data.limit);
+      ctx.commit("setFilter", data.filter);
+      ctx.dispatch("setCurrentIndex", data.offset).catch((err: AxiosError) => {
+        console.log(err);
+      });
     }
   }
 };

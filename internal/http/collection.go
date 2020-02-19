@@ -1,6 +1,7 @@
 package http
 
 import (
+	"fmt"
 	"github.com/normegil/dionysos/internal/model"
 	"strconv"
 )
@@ -8,6 +9,7 @@ import (
 type CollectionResponse struct {
 	Offset        int         `json:"offset"`
 	Limit         int         `json:"limit"`
+	Filter        string      `json:"filter"`
 	NumberOfItems int         `json:"totalSize"`
 	Items         interface{} `json:"items"`
 }
@@ -23,9 +25,16 @@ func ToCollectionOptions(parameters QueryParameters) (*model.CollectionOptions, 
 		return nil, err
 	}
 
+	filterKey := "filter"
+	filter, err := parameters.ExtractSingle(filterKey)
+	if err != nil {
+		return nil, fmt.Errorf("extracting '%s': %w", filterKey, err)
+	}
+
 	return &model.CollectionOptions{
 		Limit:  *limit,
 		Offset: *offset,
+		Filter: filter,
 	}, nil
 }
 

@@ -27,7 +27,7 @@ export default class SpecificSearchField extends Vue {
   searched = "";
 
   search(): void {
-    console.log("Searching (specific): " + this.searched);
+    this.$emit("search", this.searched);
   }
 }
 </script>

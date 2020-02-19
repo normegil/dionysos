@@ -8,7 +8,6 @@ require (
 	github.com/brianvoe/gofakeit v3.18.0+incompatible
 	github.com/docker/distribution v2.7.1+incompatible // indirect
 	github.com/docker/go-units v0.4.0 // indirect
-	github.com/gchaincl/dotsql v1.0.0
 	github.com/go-chi/chi v4.0.2+incompatible
 	github.com/google/uuid v1.1.1
 	github.com/markbates/pkger v0.13.0

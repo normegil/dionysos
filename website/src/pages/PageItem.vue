@@ -15,6 +15,7 @@
         <SpecificSearchField
           class="content__search-field"
           placeholder-key="ui.components.specific-search-field.items.placeholder"
+          @search="filter"
         />
         <Button icon="las la-plus" />
       </div>
@@ -64,6 +65,17 @@ export default class PageItem extends Vue {
 
   changePage(pageNb: number): void {
     this.$store.dispatch("items/changePage", pageNb);
+  }
+
+  filter(searchedValue: string): void {
+    this.$store
+      .dispatch("items/setFilter", searchedValue)
+      .then(() => {
+        return this.$store.dispatch("items/setCurrentIndex", 0);
+      })
+      .then(() => {
+        this.$store.dispatch("items/load");
+      });
   }
 }
 </script>

@@ -3,9 +3,7 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"github.com/gchaincl/dotsql"
 	"github.com/google/uuid"
-	"github.com/markbates/pkger"
 	"github.com/normegil/dionysos"
 	"github.com/normegil/dionysos/internal/model"
 	"github.com/normegil/postgres"
@@ -13,48 +11,32 @@ import (
 )
 
 type ItemDAO struct {
-	db      *sql.DB
-	queries map[string]string
+	db *sql.DB
 }
 
 func NewItemDAO(db *sql.DB, owner string) (*ItemDAO, error) {
-	sqlDir := pkger.Dir("/internal/database/sql")
-	fileName := "item.sql"
-	file, err := sqlDir.Open(fileName)
-	if err != nil {
-		return nil, fmt.Errorf("loading file %s: %w", fileName, err)
-	}
-	defer func() {
-		if err := file.Close(); nil != err {
-			log.Error().Err(err).Msgf("could not close file %s", fileName)
-		}
-	}()
-
-	itemSql, err := dotsql.Load(file)
-	if err != nil {
-		return nil, fmt.Errorf("parsing SQL file %s: %w", fileName, err)
-	}
-
-	queries := itemSql.QueryMap()
-	err = postgres.CreateTable(db, postgres.TableInfos{
+	queries := make(map[string]string)
+	queries["Table-Existence"] = `SELECT EXISTS ( SELECT 1 FROM information_schema.tables WHERE table_name = 'item');`
+	queries["Table-Create"] = `CREATE TABLE item ( id   uuid primary key, name varchar(300));`
+	queries["Table-Set-Owner"] = `ALTER TABLE item OWNER TO $1;`
+	err := postgres.CreateTable(db, postgres.TableInfos{
 		Queries: queries,
 		Owner:   owner,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("creating table: %w", err)
 	}
-	return &ItemDAO{db, queries}, nil
+	return &ItemDAO{db}, nil
 }
 
 func (dao *ItemDAO) LoadAll(opts model.CollectionOptions) ([]dionysos.Item, error) {
-	queryName := "Select-All"
-	rows, err := dao.db.Query(dao.queries[queryName], opts.Limit.Number(), opts.Offset.Number())
+	rows, err := dao.db.Query(`SELECT * FROM item WHERE UPPER(item.name) LIKE UPPER($1) ORDER BY name LIMIT $2 OFFSET $3;`, toDatabaseFilter(opts.Filter), opts.Limit.Number(), opts.Offset.Number())
 	if err != nil {
-		return nil, fmt.Errorf("query failed item.'%s': %w", queryName, err)
+		return nil, fmt.Errorf("select all items %+v: %w", opts, err)
 	}
 	defer func() {
 		if err := rows.Close(); nil != err {
-			log.Error().Err(err).Msgf("could not close rows of item.'%s'", queryName)
+			log.Error().Err(err).Msgf("select all: could not close rows")
 		}
 	}()
 
@@ -63,7 +45,7 @@ func (dao *ItemDAO) LoadAll(opts model.CollectionOptions) ([]dionysos.Item, erro
 		var idStr string
 		var name string
 		if err := rows.Scan(&idStr, &name); nil != err {
-			return nil, fmt.Errorf("scanning rows of item.'%s': %w", queryName, err)
+			return nil, fmt.Errorf("scanning rows of items: %w", err)
 		}
 		id, err := uuid.Parse(idStr)
 		if err != nil {
@@ -76,14 +58,13 @@ func (dao *ItemDAO) LoadAll(opts model.CollectionOptions) ([]dionysos.Item, erro
 	}
 
 	if err := rows.Err(); nil != err {
-		return nil, fmt.Errorf("parsing rows queried by item.'%s': %w", queryName, err)
+		return nil, fmt.Errorf("parsing rows queried by items: %w", err)
 	}
 	return items, nil
 }
 
-func (dao ItemDAO) TotalNumberOfItem() (*model.Natural, error) {
-	queryName := "Number-Of-Entries"
-	row := dao.db.QueryRow(dao.queries[queryName])
+func (dao ItemDAO) TotalNumberOfItem(filter string) (*model.Natural, error) {
+	row := dao.db.QueryRow(`SELECT count(*) FROM item WHERE UPPER(item.name) LIKE UPPER($1);`, toDatabaseFilter(filter))
 	var total int
 	if err := row.Scan(&total); nil != err {
 		return nil, fmt.Errorf("counting number of items: %w", err)
@@ -92,8 +73,7 @@ func (dao ItemDAO) TotalNumberOfItem() (*model.Natural, error) {
 }
 
 func (dao *ItemDAO) Insert(item dionysos.Item) error {
-	queryName := "Insert"
-	if _, err := dao.db.Exec(dao.queries[queryName], item.Name); err != nil {
+	if _, err := dao.db.Exec(`INSERT INTO item(id, name) VALUES (gen_random_uuid(), $1)`, item.Name); err != nil {
 		return fmt.Errorf("inserting %+v: %w", item, err)
 	}
 	return nil
