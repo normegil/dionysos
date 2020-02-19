@@ -39,11 +39,11 @@ export default class SpecificSearchField extends Vue {
     flex-direction: row;
     border: 1px solid $color-grey-light-2;
     border-radius: 5px;
+    font-size: 1.6rem;
     transition: all 0.3s;
 
     &:hover,
     &:focus {
-      margin: 2px;
       border: 1px solid $color-grey-light-1;
     }
   }
@@ -51,11 +51,12 @@ export default class SpecificSearchField extends Vue {
   &__input {
     flex-grow: 2;
     border: none;
+    border-bottom-left-radius: 5px;
+    border-top-left-radius: 5px;
 
     color: $color-grey-dark-3;
-    width: 100%;
-    font-size: 1.6rem;
     transition: all 0.3s;
+    padding-left: 1rem;
 
     &:hover,
     &:focus {
@@ -65,8 +66,8 @@ export default class SpecificSearchField extends Vue {
 
   &__button {
     text-align: center;
-    background: $color-grey-light-1;
-    border-radius: 5px;
+    padding: 0.5rem 2rem;
+    border-left: 1px solid $color-grey-light-2;
 
     &:hover,
     &:active {
