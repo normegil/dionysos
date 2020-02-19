@@ -124,6 +124,7 @@ export default class Pagination extends Vue {
 
     &:hover {
       color: $color-grey-dark-3;
+      background-color: $color-grey-light-2;
     }
   }
 }

@@ -15,9 +15,10 @@
         <SpecificSearchField
           class="content__search-field"
           placeholder-key="ui.components.specific-search-field.items.placeholder"
+          :searched="searched"
           @search="filter"
         />
-        <Button icon="las la-plus" />
+        <Button icon="las la-plus" titleKey="ui.button.add" />
       </div>
       <div class="content__container">
         <Table :headings="headings" :content="items" />
@@ -41,6 +42,10 @@ import SpecificSearchField from "../components/SpecificSearchField.vue";
 export default class PageItem extends Vue {
   get items(): Item[] {
     return this.$store.state.items.items;
+  }
+
+  get searched(): string {
+    return this.$store.state.items.filter;
   }
 
   get numberOfPages(): number {

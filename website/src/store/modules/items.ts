@@ -99,12 +99,12 @@ export const ITEMS: Module<ItemsState, RootState> = {
     },
     filter: (ctx, filter): void => {
       ctx
-        .dispatch("items/setFilter", filter)
+        .dispatch("setFilter", filter)
         .then(() => {
-          return ctx.dispatch("items/setCurrentIndex", 0);
+          return ctx.dispatch("setCurrentIndex", 0);
         })
         .then(() => {
-          ctx.dispatch("items/load");
+          return ctx.dispatch("load");
         });
     },
     changePage: (ctx, pageNb: number): void => {

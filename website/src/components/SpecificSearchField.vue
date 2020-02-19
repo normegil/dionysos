@@ -24,7 +24,8 @@ export default class SpecificSearchField extends Vue {
   @Prop({ required: true })
   placeholderKey!: string;
 
-  searched = "";
+  @Prop({ required: false, default: "" })
+  searched!: string;
 
   search(): void {
     this.$emit("search", this.searched);
@@ -68,6 +69,7 @@ export default class SpecificSearchField extends Vue {
     text-align: center;
     padding: 0.5rem 2rem;
     border-left: 1px solid $color-grey-light-2;
+    transition: all 0.3s;
 
     &:hover,
     &:active {

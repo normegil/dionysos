@@ -15,7 +15,8 @@ export const FRENCH_TRANSLATION = {
       }
     },
     button: {
-      search: "Recherche"
+      search: "Recherche",
+      add: "Ajouter"
     },
     components: {
       "search-field": {

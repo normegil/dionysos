@@ -15,7 +15,8 @@ export const ENGLISH_TRANSLATION = {
       }
     },
     button: {
-      search: "Search"
+      search: "Search",
+      add: "Add"
     },
     components: {
       "search-field": {

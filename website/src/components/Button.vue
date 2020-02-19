@@ -32,9 +32,11 @@ export default class Button extends Vue {
   text-decoration: none;
   color: $color-grey-dark-3;
   transition: all 0.3s;
+  white-space: nowrap;
 
+  &:active,
   &:hover {
-    border: 1px solid $color-grey-dark;
+    background-color: $color-grey-light-2;
   }
 }
 </style>
