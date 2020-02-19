@@ -7,6 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build:prod": "webpack",
     "build:dev": "webpack --env dev --progress --profile --colors",
+    "build:watch": "webpack --env dev --progress --profile --colors --watch",
     "lint": "eslint --max-warnings=0 --ext .js,.jsx,.vue,.ts,.tsx src"
   },
   "author": "Olivier Ory",
