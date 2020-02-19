@@ -68,14 +68,7 @@ export default class PageItem extends Vue {
   }
 
   filter(searchedValue: string): void {
-    this.$store
-      .dispatch("items/setFilter", searchedValue)
-      .then(() => {
-        return this.$store.dispatch("items/setCurrentIndex", 0);
-      })
-      .then(() => {
-        this.$store.dispatch("items/load");
-      });
+    this.$store.dispatch("items/filter", searchedValue);
   }
 }
 </script>
