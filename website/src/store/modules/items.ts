@@ -3,6 +3,7 @@ import Item from "../../model/Item";
 import { RootState } from "../model";
 import { HTTP } from "../http";
 import { AxiosError, AxiosResponse } from "axios";
+import Error from "../../model/Error";
 
 export interface ItemsState {
   items: Item[];
@@ -97,7 +98,7 @@ export const ITEMS: Module<ItemsState, RootState> = {
           console.log(err);
         });
     },
-    filter: (ctx, filter): void => {
+    filter: (ctx, filter: string): void => {
       ctx
         .dispatch("setFilter", filter)
         .then(() => {
@@ -107,6 +108,15 @@ export const ITEMS: Module<ItemsState, RootState> = {
           return ctx.dispatch("load");
         });
     },
+    delete: (ctx, id: string): void => {
+      HTTP.delete("/items/" + id)
+        .then(() => {
+          return ctx.dispatch("load");
+        })
+        .catch((err: AxiosError) => {
+          console.log(err);
+        });
+    },
     changePage: (ctx, pageNb: number): void => {
       const newIndex = pageNb * ctx.state.itemsPerPage;
       ctx
@@ -114,7 +124,7 @@ export const ITEMS: Module<ItemsState, RootState> = {
         .then(() => {
           return ctx.dispatch("load");
         })
-        .catch((err: AxiosError) => {
+        .catch((err: AxiosError<Error>) => {
           console.log(err);
         });
     },

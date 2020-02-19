@@ -78,3 +78,10 @@ func (dao *ItemDAO) Insert(item dionysos.Item) error {
 	}
 	return nil
 }
+
+func (dao ItemDAO) Delete(itemID uuid.UUID) error {
+	if _, err := dao.db.Exec(fmt.Sprintf("DELETE FROM item WHERE id = '%s'", itemID.String())); nil != err {
+		return fmt.Errorf("deleting item '%s': %w", itemID.String(), err)
+	}
+	return nil
+}

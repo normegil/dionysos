@@ -21,7 +21,7 @@
         <Button icon="las la-plus" titleKey="ui.button.add" />
       </div>
       <div class="content__container">
-        <Table :headings="headings" :content="items" />
+        <Table :headings="headings" :content="items" @remove="removeItem" />
       </div>
     </div>
   </div>
@@ -36,6 +36,7 @@ import Item from "../model/Item";
 import Button from "../components/Button.vue";
 import Pagination from "../components/Pagination.vue";
 import SpecificSearchField from "../components/SpecificSearchField.vue";
+import TableColumn from "../model/TableColumn";
 @Component({
   components: { SpecificSearchField, Pagination, Button, Table, SearchField }
 })
@@ -60,8 +61,12 @@ export default class PageItem extends Vue {
     return this.$store.state.items.itemsPerPage;
   }
 
-  get headings(): string[] {
-    return [this.$t("ui.components.table.items.heading.name") as string];
+  get headings(): TableColumn[] {
+    return [
+      {
+        name: this.$t("ui.components.table.items.heading.name") as string
+      }
+    ];
   }
 
   mounted(): void {
@@ -74,6 +79,10 @@ export default class PageItem extends Vue {
 
   filter(searchedValue: string): void {
     this.$store.dispatch("items/filter", searchedValue);
+  }
+
+  removeItem(id: string): void {
+    this.$store.dispatch("items/delete", id);
   }
 }
 </script>

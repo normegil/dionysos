@@ -33,7 +33,8 @@ export const ENGLISH_TRANSLATION = {
       table: {
         items: {
           heading: {
-            name: "Name"
+            name: "Name",
+            actions: "Actions"
           }
         }
       }

@@ -1,8 +1,16 @@
 <template>
   <table class="table">
     <tr class="table__row-heading">
-      <th class="table__heading" v-for="heading in headings" :key="heading">
-        {{ heading }}
+      <th
+        class="table__heading"
+        :style="heading.style"
+        v-for="heading in headings"
+        :key="heading.name"
+      >
+        {{ heading.name }}
+      </th>
+      <th class="table__heading table__heading-action">
+        {{ $t("ui.components.table.items.heading.actions") }}
       </th>
     </tr>
     <tr class="table__row" v-for="row in content" :key="row.identifier()">
@@ -13,6 +21,9 @@
       >
         {{ cell }}
       </td>
+      <td class="table__cell table__cell-action">
+        <Button icon="las la-trash" @click="remove(row.identifier())" />
+      </td>
     </tr>
   </table>
 </template>
@@ -22,14 +33,21 @@ import Component from "vue-class-component";
 import Vue from "vue";
 import { Prop } from "vue-property-decorator";
 import Rowable from "../model/Rowable";
-
-@Component
+import TableColumn from "../model/TableColumn";
+import Button from "./Button.vue";
+@Component({
+  components: { Button }
+})
 export default class Table extends Vue {
   @Prop({ default: [], required: false })
-  headings!: string[];
+  headings!: TableColumn[];
 
   @Prop({ default: [], required: true })
   content!: Rowable[];
+
+  remove(id: string): void {
+    this.$emit("remove", id);
+  }
 }
 </script>
 
@@ -43,8 +61,8 @@ export default class Table extends Vue {
     border-bottom: 2px solid $color-grey-dark;
     padding: 1rem;
 
-    &:not(:last-child) {
-      border-right: 2px solid $color-grey-dark;
+    &-action {
+      width: 20rem;
     }
   }
 
@@ -55,7 +73,7 @@ export default class Table extends Vue {
   &__row {
     transition: all 0.3s;
     &:hover {
-      background-color: $color-grey-light-2;
+      background-color: $color-grey-light-3;
     }
   }
 

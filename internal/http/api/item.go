@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-chi/chi"
+	"github.com/google/uuid"
 	"github.com/normegil/dionysos"
 	internalHTTP "github.com/normegil/dionysos/internal/http"
 	httperror "github.com/normegil/dionysos/internal/http/error"
@@ -21,6 +22,7 @@ func (c ItemController) Route() http.Handler {
 	rt := chi.NewRouter()
 	rt.Get("/", c.loadAll)
 	rt.Get("/{itemID}", c.load)
+	rt.Delete("/{itemID}", c.delete)
 	return rt
 }
 
@@ -78,6 +80,24 @@ func (c ItemController) load(w http.ResponseWriter, _ *http.Request) {
 	})
 }
 
+func (c ItemController) delete(w http.ResponseWriter, r *http.Request) {
+	itemIDStr := chi.URLParam(r, "itemID")
+	itemID, err := uuid.Parse(itemIDStr)
+	if err != nil {
+		c.ErrHandler.Handle(w, httperror.HTTPError{
+			Code:   40001,
+			Status: http.StatusBadRequest,
+			Err:    fmt.Errorf("could not parse '%s' into uuid: %w", itemIDStr, err),
+		})
+		return
+	}
+	if err := c.ItemDAO.Delete(itemID); nil != err {
+		c.ErrHandler.Handle(w, err)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
 func (c ItemController) toDefaultCollectionOptions(options *model.CollectionOptions) *model.CollectionOptions {
 	if 0 != options.Limit.Number() {
 		return options
@@ -96,4 +116,5 @@ func (c ItemController) toDefaultCollectionOptions(options *model.CollectionOpti
 type ItemDAO interface {
 	LoadAll(options model.CollectionOptions) ([]dionysos.Item, error)
 	TotalNumberOfItem(filter string) (*model.Natural, error)
+	Delete(id uuid.UUID) error
 }
