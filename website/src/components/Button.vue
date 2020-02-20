@@ -1,7 +1,7 @@
 <template>
   <a class="button" @click="click">
     <i v-if="icon !== '' && icon != null" :class="icon" />
-    <span v-if="titleKey !== '' && titleKey != null">{{ $t(titleKey) }}</span>
+    <span v-if="title !== '' && title != null">{{ title }}</span>
   </a>
 </template>
 
@@ -15,7 +15,7 @@ export default class Button extends Vue {
   icon!: string;
 
   @Prop({ default: "", required: false })
-  titleKey!: string;
+  title!: string;
 
   click(): void {
     this.$emit("click");
@@ -34,6 +34,7 @@ export default class Button extends Vue {
   transition: all 0.3s;
   white-space: nowrap;
   background-color: $color-white;
+  cursor: pointer;
 
   &:active,
   &:hover {

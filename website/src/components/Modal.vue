@@ -7,7 +7,10 @@
           <Button icon="las la-times" @click="$emit('close')" />
         </div>
         <div class="modal__content">
-          <p>Content</p>
+          <slot />
+        </div>
+        <div class="modal__actions">
+          <slot name="actions" />
         </div>
       </div>
     </div>
@@ -56,7 +59,7 @@ export default class Modal extends Vue {
   &__container {
     @include center-block;
     background-color: $color-white;
-    width: 75%;
+    min-width: 25%;
     box-shadow: 0 2rem 4rem rgba($color-black, 0.8);
     z-index: 4000;
     overflow: hidden;
@@ -66,6 +69,8 @@ export default class Modal extends Vue {
   &__header {
     display: flex;
     align-items: center;
+    padding-bottom: 5px;
+    border-bottom: 2px solid $color-grey-dark;
   }
 
   &__title {
@@ -74,6 +79,11 @@ export default class Modal extends Vue {
 
   &__content {
     margin-top: 15px;
+  }
+
+  &__actions {
+    margin-top: 15px;
+    text-align: right;
   }
 }
 </style>

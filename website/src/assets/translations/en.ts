@@ -16,11 +16,17 @@ export const ENGLISH_TRANSLATION = {
     },
     button: {
       search: "Search",
-      add: "Add"
+      save: "Save",
+      cancel: "Cancel"
     },
     modal: {
       item: {
-        title: "Add item"
+        title: {
+          add: "Add an item",
+          update: "Update an item"
+        },
+        id: "ID",
+        name: "Name"
       }
     },
     components: {

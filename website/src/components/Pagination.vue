@@ -97,6 +97,7 @@ export default class Pagination extends Vue {
     text-decoration: none;
     color: $color-grey-dark-3;
     transition: all 0.3s;
+    cursor: pointer;
 
     &:not(:last-child) {
       margin-right: -1px;

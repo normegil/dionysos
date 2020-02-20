@@ -21,18 +21,32 @@
         <Button
           icon="las la-plus"
           titleKey="ui.button.add"
-          @click="showAddItem = true"
+          @click="showUpdateItem = true"
         />
       </div>
       <div class="content__container">
         <Table :headings="headings" :content="items" @remove="removeItem" />
       </div>
     </div>
-    <Modal
-      :show="showAddItem"
-      :title="$t('ui.modal.item.title')"
-      @close="showAddItem = false"
-    />
+    <Modal :show="showUpdateItem" :title="modalLabel" @close="closeModal">
+      <div class="item-modal__content">
+        <InputField
+          class="item-modal__field"
+          v-model="editedModel.id"
+          v-if="editedModel.id !== ''"
+          :label="$t('ui.modal.item.id')"
+          :disabled="true"
+        />
+        <InputField
+          class="item-modal__field"
+          v-model="editedModel.name"
+          :label="$t('ui.modal.item.name')"
+        />
+      </div>
+      <template v-slot:actions>
+        <Button :title="$t('ui.button.save')" @click="saveItem" />
+      </template>
+    </Modal>
   </div>
 </template>
 
@@ -47,8 +61,10 @@ import Pagination from "../components/Pagination.vue";
 import SpecificSearchField from "../components/SpecificSearchField.vue";
 import TableColumn from "../model/TableColumn";
 import Modal from "../components/Modal.vue";
+import InputField from "../components/InputField.vue";
 @Component({
   components: {
+    InputField,
     Modal,
     SpecificSearchField,
     Pagination,
@@ -58,7 +74,9 @@ import Modal from "../components/Modal.vue";
   }
 })
 export default class PageItem extends Vue {
-  showAddItem = true;
+  showUpdateItem = false;
+
+  editedModel: { id: string; name: string } = { id: "", name: "" };
 
   get items(): Item[] {
     return this.$store.state.items.items;
@@ -66,6 +84,14 @@ export default class PageItem extends Vue {
 
   get searched(): string {
     return this.$store.state.items.filter;
+  }
+
+  get modalLabel(): string {
+    let key = "ui.modal.item.title.add";
+    if (this.editedModel.id !== "") {
+      key = "ui.modal.item.title.update";
+    }
+    return this.$t(key) as string;
   }
 
   get numberOfPages(): number {
@@ -103,6 +129,20 @@ export default class PageItem extends Vue {
   removeItem(id: string): void {
     this.$store.dispatch("items/delete", id);
   }
+
+  saveItem(): void {
+    this.$store.dispatch("items/save", this.editedModel).finally(() => {
+      this.closeModal();
+    });
+  }
+
+  closeModal(): void {
+    this.editedModel = {
+      id: "",
+      name: ""
+    };
+    this.showUpdateItem = false;
+  }
 }
 </script>
 
@@ -139,5 +179,14 @@ export default class PageItem extends Vue {
 }
 .flex-content {
   display: flex;
+}
+.item-modal {
+  &__content {
+    padding: 0 1rem;
+  }
+
+  &__field:not(:last-child) {
+    margin-bottom: 5px;
+  }
 }
 </style>

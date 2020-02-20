@@ -16,11 +16,17 @@ export const FRENCH_TRANSLATION = {
     },
     button: {
       search: "Recherche",
-      add: "Ajouter"
+      save: "Sauvegarder",
+      cancel: "Annuler"
     },
     modal: {
       item: {
-        title: "Ajouter un objet"
+        title: {
+          add: "Ajouter un objet",
+          update: "Modifier un objet"
+        },
+        id: "ID",
+        name: "Nom"
       }
     },
     components: {

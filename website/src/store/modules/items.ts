@@ -108,6 +108,15 @@ export const ITEMS: Module<ItemsState, RootState> = {
           return ctx.dispatch("load");
         });
     },
+    save: (ctx, item: ItemDTO): void => {
+      HTTP.put("/items", item)
+        .then(() => {
+          return ctx.dispatch("load");
+        })
+        .catch((err: AxiosError) => {
+          console.log(err);
+        });
+    },
     delete: (ctx, id: string): void => {
       HTTP.delete("/items/" + id)
         .then(() => {

@@ -72,9 +72,25 @@ func (dao ItemDAO) TotalNumberOfItem(filter string) (*model.Natural, error) {
 	return model.NewNatural(total)
 }
 
+func (dao ItemDAO) Save(item dionysos.Item) (bool, error) {
+	if item.ID == uuid.Nil {
+		err := dao.Insert(item)
+		return true, err
+	}
+	err := dao.Update(item)
+	return false, err
+}
+
 func (dao *ItemDAO) Insert(item dionysos.Item) error {
 	if _, err := dao.db.Exec(`INSERT INTO item(id, name) VALUES (gen_random_uuid(), $1)`, item.Name); err != nil {
 		return fmt.Errorf("inserting %+v: %w", item, err)
+	}
+	return nil
+}
+
+func (dao *ItemDAO) Update(item dionysos.Item) error {
+	if _, err := dao.db.Exec(`UPDATE item SET name = $2 WHERE id = $1`, item.ID, item.Name); err != nil {
+		return fmt.Errorf("updating %+v: %w", item, err)
 	}
 	return nil
 }
