@@ -18,12 +18,21 @@
           :searched="searched"
           @search="filter"
         />
-        <Button icon="las la-plus" titleKey="ui.button.add" />
+        <Button
+          icon="las la-plus"
+          titleKey="ui.button.add"
+          @click="showAddItem = true"
+        />
       </div>
       <div class="content__container">
         <Table :headings="headings" :content="items" @remove="removeItem" />
       </div>
     </div>
+    <Modal
+      :show="showAddItem"
+      :title="$t('ui.modal.item.title')"
+      @close="showAddItem = false"
+    />
   </div>
 </template>
 
@@ -37,10 +46,20 @@ import Button from "../components/Button.vue";
 import Pagination from "../components/Pagination.vue";
 import SpecificSearchField from "../components/SpecificSearchField.vue";
 import TableColumn from "../model/TableColumn";
+import Modal from "../components/Modal.vue";
 @Component({
-  components: { SpecificSearchField, Pagination, Button, Table, SearchField }
+  components: {
+    Modal,
+    SpecificSearchField,
+    Pagination,
+    Button,
+    Table,
+    SearchField
+  }
 })
 export default class PageItem extends Vue {
+  showAddItem = true;
+
   get items(): Item[] {
     return this.$store.state.items.items;
   }

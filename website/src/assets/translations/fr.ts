@@ -18,6 +18,11 @@ export const FRENCH_TRANSLATION = {
       search: "Recherche",
       add: "Ajouter"
     },
+    modal: {
+      item: {
+        title: "Ajouter un objet"
+      }
+    },
     components: {
       "search-field": {
         placeholder: "Rechercher les stockages, les objets, ..."

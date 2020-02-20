@@ -18,6 +18,11 @@ export const ENGLISH_TRANSLATION = {
       search: "Search",
       add: "Add"
     },
+    modal: {
+      item: {
+        title: "Add item"
+      }
+    },
     components: {
       "search-field": {
         placeholder: "Search storages, items, ..."
