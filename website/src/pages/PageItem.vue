@@ -27,7 +27,12 @@
         />
       </div>
       <div class="content__container">
-        <Table :headings="headings" :content="items" @remove="removeItem" />
+        <Table
+          :headings="headings"
+          :content="items"
+          @edit="editItem"
+          @remove="removeItem"
+        />
       </div>
     </div>
     <Modal :show="showUpdateItem" :title="modalLabel" @close="closeModal">
@@ -126,6 +131,22 @@ export default class PageItem extends Vue {
 
   filter(searchedValue: string): void {
     this.$store.dispatch("items/filter", searchedValue);
+  }
+
+  editItem(id: string): void {
+    let found = false;
+    for (const item of this.items) {
+      if (item.id === id) {
+        this.editedModel = item;
+        found = true;
+        break;
+      }
+    }
+    if (found) {
+      this.showUpdateItem = true;
+    } else {
+      console.error("Could not find item with ID: " + id);
+    }
   }
 
   removeItem(id: string): void {
