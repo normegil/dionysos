@@ -33,8 +33,8 @@ func (c ItemController) loadAll(w http.ResponseWriter, r *http.Request) {
 	collectionOpts, err := internalHTTP.ToCollectionOptions(parameters)
 	if err != nil {
 		c.ErrHandler.Handle(w, httperror.HTTPError{
-			Code:   400,
-			Status: 40010,
+			Code:   40010,
+			Status: http.StatusBadRequest,
 			Err:    err,
 		})
 		return

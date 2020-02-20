@@ -13,10 +13,23 @@
     <input
       :id="this._uid"
       class="field__input"
+      :class="{
+        'field__input--left-rounded': label === '',
+        'field__input--right-rounded': button === ''
+      }"
       :value="value"
+      :placeholder="placeholder"
       @input="$emit('input', $event.target.value)"
+      @keyup.enter="$emit('keyup-enter')"
       :disabled="disabled"
     />
+    <a
+      v-if="button !== ''"
+      class="field__button"
+      @click.stop="$emit('button-click')"
+    >
+      {{ button }}
+    </a>
   </div>
 </template>
 
@@ -32,6 +45,12 @@ export default class InputField extends Vue {
 
   @Prop({ required: true })
   value!: string;
+
+  @Prop({ default: "", required: false })
+  placeholder!: string;
+
+  @Prop({ default: "", required: false })
+  button!: string;
 
   @Prop({ default: false, required: false })
   disabled!: boolean;
@@ -77,12 +96,10 @@ export default class InputField extends Vue {
   &__input {
     flex-grow: 2;
     border: none;
-    border-bottom-right-radius: 5px;
-    border-top-right-radius: 5px;
 
     color: $color-grey-dark-3;
     transition: all 0.3s;
-    padding-left: 1rem;
+    padding: 0 1rem;
 
     &:hover,
     &:focus {
@@ -91,6 +108,28 @@ export default class InputField extends Vue {
 
     &--disabled {
       cursor: not-allowed;
+    }
+
+    &--left-rounded {
+      border-bottom-left-radius: 5px;
+      border-top-left-radius: 5px;
+    }
+
+    &--right-rounded {
+      border-bottom-right-radius: 5px;
+      border-top-right-radius: 5px;
+    }
+  }
+
+  &__button {
+    text-align: center;
+    padding: 0.5rem 2rem;
+    border-left: 1px solid $color-grey-light-2;
+    transition: all 0.3s;
+
+    &:hover,
+    &:active {
+      background: $color-grey-light-2;
     }
   }
 }

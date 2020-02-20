@@ -59,7 +59,10 @@ export const ITEMS: Module<ItemsState, RootState> = {
     },
     lastPageFirstIndex: (state, getters): number => {
       const nbPage = getters.numberOfPages;
-      const lastPage = nbPage - 1; // pages start at 0
+      let lastPage = nbPage - 1; // pages start at 0
+      if (nbPage === 0) {
+        lastPage = 0;
+      }
       return getters.getPageFirstIndex(lastPage);
     }
   },
@@ -154,7 +157,8 @@ export const ITEMS: Module<ItemsState, RootState> = {
       const i = ctx.getters.lastPageFirstIndex;
       if (i < currentIndex) {
         toSet = i;
-      } else if (currentIndex < 0) {
+      }
+      if (currentIndex < 0) {
         toSet = 0;
       }
       ctx.commit("setCurrentIndex", toSet);

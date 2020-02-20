@@ -14,7 +14,9 @@
         />
         <SpecificSearchField
           class="content__search-field"
-          placeholder-key="ui.components.specific-search-field.items.placeholder"
+          :placeholder="
+            $t('ui.components.specific-search-field.items.placeholder')
+          "
           :searched="searched"
           @search="filter"
         />
