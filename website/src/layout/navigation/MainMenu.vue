@@ -49,7 +49,7 @@ export default class MainMenu extends Vue {
       },
       {
         title: "API",
-        href: "#",
+        href: "api/",
         icon: "las la-server"
       },
       {
