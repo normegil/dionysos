@@ -112,7 +112,6 @@ export default class CollectionManager extends Vue {
     if (!this.isPageFullyContained) {
       numberOfPages += 1;
     }
-    console.log(this.totalNumberOfItems);
     return numberOfPages;
   }
 
