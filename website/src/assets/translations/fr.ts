@@ -16,6 +16,7 @@ export const FRENCH_TRANSLATION = {
     },
     button: {
       search: "Recherche",
+      add: "Ajouter",
       save: "Sauvegarder",
       cancel: "Annuler"
     },

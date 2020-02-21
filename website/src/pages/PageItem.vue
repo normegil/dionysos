@@ -5,37 +5,20 @@
       <div class="content__title-container">
         <h1 class="content__title-text">{{ $t("ui.menu.main.items") }}</h1>
       </div>
-      <div class="content__container flex-content">
-        <Pagination
-          :current-page="currentPage"
-          :item-per-page="itemsPerPage"
-          :number-of-pages="numberOfPages"
-          @change-page="changePage"
-        />
-        <SpecificSearchField
-          class="content__search-field"
-          :placeholder="
-            $t('ui.components.specific-search-field.items.placeholder')
-          "
-          :searched="searched"
-          @search="filter"
-        />
-        <Button
-          icon="las la-plus"
-          titleKey="ui.button.add"
-          @click="showUpdateItem = true"
-        />
-      </div>
-      <div class="content__container">
-        <Table
-          :headings="headings"
-          :content="items"
-          @edit="editItem"
-          @remove="removeItem"
-        />
-      </div>
+      <CollectionManager
+        class="content__collection"
+        store-namespace="items"
+        :table-headers="headings"
+        :filter-placeholder="
+          $t('ui.components.specific-search-field.items.placeholder')
+        "
+        :items-per-page="$store.state.items.itemsPerPage"
+        @create-item="createItem"
+        @edit-item="editItem"
+        @remove-item="removeItem"
+      />
     </div>
-    <Modal :show="showUpdateItem" :title="modalLabel" @close="closeModal">
+    <Modal :show="showUpdateItemModal" :title="modalLabel" @close="closeModal">
       <div class="item-modal__content">
         <InputField
           class="item-modal__field"
@@ -62,13 +45,14 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import SearchField from "../components/SearchField.vue";
 import Table from "../components/Table.vue";
-import Item from "../model/Item";
 import Button from "../components/Button.vue";
 import Pagination from "../components/Pagination.vue";
 import SpecificSearchField from "../components/SpecificSearchField.vue";
 import TableColumn from "../model/TableColumn";
 import Modal from "../components/Modal.vue";
 import InputField from "../components/InputField.vue";
+import CollectionManager from "../components/CollectionManager.vue";
+
 @Component({
   components: {
     InputField,
@@ -77,21 +61,14 @@ import InputField from "../components/InputField.vue";
     Pagination,
     Button,
     Table,
-    SearchField
+    SearchField,
+    CollectionManager
   }
 })
 export default class PageItem extends Vue {
-  showUpdateItem = false;
+  showUpdateItemModal = false;
 
   editedModel: { id: string; name: string } = { id: "", name: "" };
-
-  get items(): Item[] {
-    return this.$store.state.items.items;
-  }
-
-  get searched(): string {
-    return this.$store.state.items.filter;
-  }
 
   get modalLabel(): string {
     let key = "ui.modal.item.title.add";
@@ -99,18 +76,6 @@ export default class PageItem extends Vue {
       key = "ui.modal.item.title.update";
     }
     return this.$t(key) as string;
-  }
-
-  get numberOfPages(): number {
-    return this.$store.getters["items/numberOfPages"];
-  }
-
-  get currentPage(): number {
-    return this.$store.getters["items/currentPage"];
-  }
-
-  get itemsPerPage(): number {
-    return this.$store.state.items.itemsPerPage;
   }
 
   get headings(): TableColumn[] {
@@ -121,21 +86,17 @@ export default class PageItem extends Vue {
     ];
   }
 
-  mounted(): void {
-    this.$store.dispatch("items/load");
-  }
-
-  changePage(pageNb: number): void {
-    this.$store.dispatch("items/changePage", pageNb);
-  }
-
-  filter(searchedValue: string): void {
-    this.$store.dispatch("items/filter", searchedValue);
+  createItem(): void {
+    this.editedModel = {
+      id: "",
+      name: ""
+    };
+    this.showUpdateItemModal = true;
   }
 
   editItem(id: string): void {
     let found = false;
-    for (const item of this.items) {
+    for (const item of this.$store.state.items.items) {
       if (item.id === id) {
         this.editedModel = item;
         found = true;
@@ -143,7 +104,7 @@ export default class PageItem extends Vue {
       }
     }
     if (found) {
-      this.showUpdateItem = true;
+      this.showUpdateItemModal = true;
     } else {
       console.error("Could not find item with ID: " + id);
     }
@@ -164,7 +125,11 @@ export default class PageItem extends Vue {
       id: "",
       name: ""
     };
-    this.showUpdateItem = false;
+    this.showUpdateItemModal = false;
+  }
+
+  mounted(): void {
+    this.$store.dispatch("items/load");
   }
 }
 </script>
@@ -189,20 +154,15 @@ export default class PageItem extends Vue {
     }
   }
 
-  &__container {
-    margin-top: 2.2rem;
-    padding: 1rem;
-    border-radius: 2px;
-    box-shadow: 0 0 5px $color-grey-light-2;
-  }
-  &__search-field {
-    width: 100%;
-    margin: 0 1rem;
+  &__collection {
+    margin-bottom: 2rem;
   }
 }
+
 .flex-content {
   display: flex;
 }
+
 .item-modal {
   &__content {
     padding: 0 1rem;

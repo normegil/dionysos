@@ -16,6 +16,7 @@ export const ENGLISH_TRANSLATION = {
     },
     button: {
       search: "Search",
+      add: "Add",
       save: "Save",
       cancel: "Cancel"
     },

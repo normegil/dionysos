@@ -8,7 +8,7 @@ export interface ItemsState {
   items: Item[];
   itemsPerPage: number;
   currentIndex: number;
-  totalItems: number;
+  total: number;
   filter: string;
 }
 
@@ -36,18 +36,15 @@ export const ITEMS: Module<ItemsState, RootState> = {
     ],
     currentIndex: 0,
     itemsPerPage: 20,
-    totalItems: 4,
+    total: 4,
     filter: ""
-  },
-  getters: {
-
   },
   mutations: {
     setItems: (state, items: Item[]): void => {
       state.items = items;
     },
-    setTotalItems: (state, nbItems: number): void => {
-      state.totalItems = nbItems;
+    setTotal: (state, nbItems: number): void => {
+      state.total = nbItems;
     },
     setItemsPerPage: (state, itemsPerPage: number): void => {
       state.itemsPerPage = itemsPerPage;
@@ -100,12 +97,10 @@ export const ITEMS: Module<ItemsState, RootState> = {
         (dto): Item => new Item(dto.id, dto.name)
       );
       ctx.commit("setItems", itemCollection);
-      ctx.commit("setTotalItems", data.totalSize);
+      ctx.commit("setTotal", data.totalSize);
       ctx.commit("setItemsPerPage", data.limit);
       ctx.commit("setFilter", data.filter);
-      ctx.dispatch("setCurrentIndex", data.offset).catch((err: AxiosError) => {
-        console.log(err);
-      });
+      ctx.commit("setCurrentIndex", data.offset);
     }
   }
 };
