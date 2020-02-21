@@ -3,7 +3,6 @@ import Item from "../../model/Item";
 import { RootState } from "../model";
 import { HTTP } from "../http";
 import { AxiosError, AxiosResponse } from "axios";
-import Error from "../../model/Error";
 
 export interface ItemsState {
   items: Item[];
@@ -41,30 +40,7 @@ export const ITEMS: Module<ItemsState, RootState> = {
     filter: ""
   },
   getters: {
-    isPageFullyContained: (state): boolean => {
-      return state.totalItems % state.itemsPerPage === 0;
-    },
-    numberOfPages: (state, getters): number => {
-      let numberOfPages = Math.floor(state.totalItems / state.itemsPerPage);
-      if (!getters.isPageFullyContained) {
-        numberOfPages += 1;
-      }
-      return numberOfPages;
-    },
-    currentPage: (state): number => {
-      return Math.floor(state.currentIndex / state.itemsPerPage);
-    },
-    getPageFirstIndex: state => (pageNb: number): number => {
-      return state.itemsPerPage * pageNb;
-    },
-    lastPageFirstIndex: (state, getters): number => {
-      const nbPage = getters.numberOfPages;
-      let lastPage = nbPage - 1; // pages start at 0
-      if (nbPage === 0) {
-        lastPage = 0;
-      }
-      return getters.getPageFirstIndex(lastPage);
-    }
+
   },
   mutations: {
     setItems: (state, items: Item[]): void => {
@@ -101,16 +77,6 @@ export const ITEMS: Module<ItemsState, RootState> = {
           console.log(err);
         });
     },
-    filter: (ctx, filter: string): void => {
-      ctx
-        .dispatch("setFilter", filter)
-        .then(() => {
-          return ctx.dispatch("setCurrentIndex", 0);
-        })
-        .then(() => {
-          return ctx.dispatch("load");
-        });
-    },
     save: (ctx, item: ItemDTO): void => {
       HTTP.put("/items", item)
         .then(() => {
@@ -129,17 +95,6 @@ export const ITEMS: Module<ItemsState, RootState> = {
           console.log(err);
         });
     },
-    changePage: (ctx, pageNb: number): void => {
-      const newIndex = pageNb * ctx.state.itemsPerPage;
-      ctx
-        .dispatch("setCurrentIndex", newIndex)
-        .then(() => {
-          return ctx.dispatch("load");
-        })
-        .catch((err: AxiosError<Error>) => {
-          console.log(err);
-        });
-    },
     refreshItems: (ctx, data: ItemCollection): void => {
       const itemCollection = data.items.map(
         (dto): Item => new Item(dto.id, dto.name)
@@ -151,20 +106,6 @@ export const ITEMS: Module<ItemsState, RootState> = {
       ctx.dispatch("setCurrentIndex", data.offset).catch((err: AxiosError) => {
         console.log(err);
       });
-    },
-    setCurrentIndex: (ctx, currentIndex: number): void => {
-      let toSet = currentIndex;
-      const i = ctx.getters.lastPageFirstIndex;
-      if (i < currentIndex) {
-        toSet = i;
-      }
-      if (currentIndex < 0) {
-        toSet = 0;
-      }
-      ctx.commit("setCurrentIndex", toSet);
-    },
-    setFilter: (ctx, filter: string): void => {
-      ctx.commit("setFilter", filter);
     }
   }
 };
