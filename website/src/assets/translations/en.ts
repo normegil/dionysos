@@ -28,6 +28,14 @@ export const ENGLISH_TRANSLATION = {
         },
         id: "ID",
         name: "Name"
+      },
+      storage: {
+        title: {
+          add: "Add a storage",
+          update: "Update a storage"
+        },
+        id: "ID",
+        name: "Name"
       }
     },
     components: {
@@ -37,6 +45,9 @@ export const ENGLISH_TRANSLATION = {
       "specific-search-field": {
         items: {
           placeholder: "Search items ..."
+        },
+        storages: {
+          placeholder: "Search storages ..."
         }
       },
       actions: {
@@ -44,6 +55,12 @@ export const ENGLISH_TRANSLATION = {
       },
       table: {
         items: {
+          heading: {
+            name: "Name",
+            actions: "Actions"
+          }
+        },
+        storages: {
           heading: {
             name: "Name",
             actions: "Actions"

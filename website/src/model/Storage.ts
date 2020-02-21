@@ -1,6 +1,6 @@
 import Rowable from "./Rowable";
 
-export default class Item implements Rowable {
+export default class Storage implements Rowable {
   id: string;
   name: string;
 

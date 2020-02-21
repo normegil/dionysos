@@ -28,6 +28,14 @@ export const FRENCH_TRANSLATION = {
         },
         id: "ID",
         name: "Nom"
+      },
+      storage: {
+        title: {
+          add: "Ajouter un stockage",
+          update: "Modifier un stockage"
+        },
+        id: "ID",
+        name: "Nom"
       }
     },
     components: {
@@ -36,6 +44,11 @@ export const FRENCH_TRANSLATION = {
       },
       table: {
         items: {
+          heading: {
+            name: "Nom"
+          }
+        },
+        storages: {
           heading: {
             name: "Nom"
           }

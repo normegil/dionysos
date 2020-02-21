@@ -98,7 +98,6 @@ func (c StorageController) save(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-
 	storage, err := dto.ToStorage()
 	if err != nil {
 		c.ErrHandler.Handle(w, httperror.HTTPError{
