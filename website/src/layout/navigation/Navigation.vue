@@ -2,7 +2,6 @@
   <div class="navigation">
     <div class="navigation__logo-container">
       <Logo class="navigation__logo" />
-      <SwitchNavigation />
     </div>
     <MainMenu />
   </div>

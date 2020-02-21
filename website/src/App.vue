@@ -29,6 +29,7 @@ export default class App extends Vue {}
   }
 
   &__navigation {
+    min-width: 19rem;
   }
 }
 </style>
