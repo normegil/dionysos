@@ -98,6 +98,11 @@ func listenRun(_ *cobra.Command, _ []string) {
 		}
 	}()
 
+	storageDAO, err := database.NewStorageDAO(db, dbCfg.User)
+	if err != nil {
+		log.Fatal().Err(err).Msg("creating storage dao")
+	}
+
 	itemDAO, err := database.NewItemDAO(db, dbCfg.User)
 	if err != nil {
 		log.Fatal().Err(err).Msg("creating item dao")
@@ -108,6 +113,13 @@ func listenRun(_ *cobra.Command, _ []string) {
 		const dummyItemNb = 50
 
 		for i := 0; i < dummyItemNb; i++ {
+			storage := dionysos.Storage{Name: gofakeit.Company()}
+			if err := storageDAO.Insert(storage); nil != err {
+				log.Fatal().Err(err).Msgf("inserting %+v", storage)
+			}
+		}
+
+		for i := 0; i < dummyItemNb; i++ {
 			item := dionysos.Item{Name: gofakeit.BeerName()}
 			if err := itemDAO.Insert(item); nil != err {
 				log.Fatal().Err(err).Msgf("inserting %+v", item)
@@ -116,9 +128,14 @@ func listenRun(_ *cobra.Command, _ []string) {
 	}
 
 	apiRoutes := make(map[string]http.Handler)
+	errorHandler := httperror.HTTPErrorHandler{}
+	apiRoutes["/storages"] = api.StorageController{
+		StorageDAO: storageDAO,
+		ErrHandler: errorHandler,
+	}.Route()
 	apiRoutes["/items"] = api.ItemController{
 		ItemDAO:    itemDAO,
-		ErrHandler: httperror.HTTPErrorHandler{},
+		ErrHandler: errorHandler,
 	}.Route()
 	apiCtrl := internalHTTP.MultiController{
 		Routes: apiRoutes,
