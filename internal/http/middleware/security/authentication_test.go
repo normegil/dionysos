@@ -28,7 +28,7 @@ func TestAuthenticationHandler(t *testing.T) {
 			name:                   "Wrong password - Authentication not required",
 			headerContent:          "Basic dXNlcjpub3QtcGFzcw==", // user:not-pass
 			authenticationRequired: false,
-			expected:               http.StatusOK,
+			expected:               http.StatusUnauthorized,
 		},
 		{
 			name:                   "Wrong password - Authentication required",
@@ -37,10 +37,16 @@ func TestAuthenticationHandler(t *testing.T) {
 			expected:               http.StatusUnauthorized,
 		},
 		{
-			name:                   "Empty header",
+			name:                   "Empty header - Authentication required",
+			headerContent:          "",
+			authenticationRequired: true,
+			expected:               http.StatusUnauthorized,
+		},
+		{
+			name:                   "Empty header - Authentication not required",
 			headerContent:          "",
 			authenticationRequired: false,
-			expected:               http.StatusUnauthorized,
+			expected:               http.StatusOK,
 		},
 	}
 
@@ -58,8 +64,9 @@ func TestAuthenticationHandler(t *testing.T) {
 						return
 					}
 					user := r.Context().Value(security.KeyUser)
-					if nil == user {
+					if nil == user || user == security.AnonymousUser {
 						w.WriteHeader(http.StatusUnauthorized)
+						return
 					}
 					w.WriteHeader(http.StatusOK)
 				}),
