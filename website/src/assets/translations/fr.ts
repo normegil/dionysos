@@ -4,6 +4,7 @@ export const FRENCH_TRANSLATION = {
       main: {
         storages: "Stockages",
         items: "Objets",
+        search: "Résultats de la recherche",
         more: {
           title: "Plus",
           sub: {

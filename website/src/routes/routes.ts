@@ -1,5 +1,6 @@
 import PageItem from "../pages/PageItem.vue";
-import PageStorage from "../pages/PageStorage.vue"
+import PageStorage from "../pages/PageStorage.vue";
+import PageSearch from "../pages/PageSearch.vue";
 
 export const ROUTES = [
   {
@@ -9,5 +10,9 @@ export const ROUTES = [
   {
     path: "/items",
     component: PageItem
+  },
+  {
+    path: "/search",
+    component: PageSearch
   }
 ];

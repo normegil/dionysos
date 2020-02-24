@@ -8,6 +8,7 @@ import (
 )
 
 type HTTPErrorHandler struct {
+	LogUserError bool
 }
 
 func (h HTTPErrorHandler) Handle(w http.ResponseWriter, err error) {
@@ -18,6 +19,11 @@ func (h HTTPErrorHandler) Handle(w http.ResponseWriter, err error) {
 			Status: http.StatusInternalServerError,
 			Err:    err,
 		}
+	}
+	if httpError.Status%400 < 100 && h.LogUserError {
+		log.Error().Err(err).Msg("user error")
+	} else if httpError.Status%400 >= 100 {
+		log.Error().Err(err).Msg("rest error")
 	}
 	resp := httpError.toResponse()
 	resp.Error = err.Error()

@@ -8,6 +8,7 @@ import (
 	"github.com/normegil/dionysos/internal/model"
 	"github.com/normegil/postgres"
 	"github.com/rs/zerolog/log"
+	"strconv"
 )
 
 type StorageDAO struct {
@@ -100,4 +101,78 @@ func (dao StorageDAO) Delete(storageID uuid.UUID) error {
 		return fmt.Errorf("deleting storage '%s': %w", storageID.String(), err)
 	}
 	return nil
+}
+
+func (dao StorageDAO) Search(params model.SearchParameters) (*model.SearchResult, error) {
+	query := `SELECT searchIndex.id, searchIndex.name
+				FROM (
+					 SELECT id, name, setweight(to_tsvector(name), 'A') as document
+					 FROM storage
+				 ) searchIndex`
+	if 0 != len(params.Searches) {
+		query += " WHERE "
+	}
+	for i, _ := range params.Searches {
+		if i != 0 {
+			query += " OR "
+		}
+		query += "searchIndex.document @@ to_tsquery($" + strconv.Itoa(2*i+1) + ") OR searchIndex.document @@ $" + strconv.Itoa(2*i+2)
+	}
+
+	searches := make([]interface{}, 0)
+	for _, search := range params.Searches {
+		if "" == search {
+			searches = append(append(searches, "*"), "*")
+		} else {
+			modifiedSearchTerm := search + ":*"
+			searches = append(append(searches, modifiedSearchTerm), modifiedSearchTerm)
+		}
+	}
+	rows, err := dao.db.Query(query, searches...)
+	if err != nil {
+		return nil, fmt.Errorf("search for storages with parameter %+v: %w", params, err)
+	}
+	defer func() {
+		if err := rows.Close(); nil != err {
+			log.Error().Err(err).Msgf("search storages: could not close rows")
+		}
+	}()
+
+	storages, err := dao.fromRows(rows)
+	storagesInt := make([]interface{}, 0)
+	for _, storage := range storages {
+		storagesInt = append(storagesInt, storage)
+	}
+	if nil != err {
+		return nil, fmt.Errorf("map search results to storages: %w", err)
+	}
+	return &model.SearchResult{
+		Type:    "Storage",
+		Results: storagesInt,
+	}, nil
+}
+
+func (dao StorageDAO) fromRows(rows *sql.Rows) ([]dionysos.Storage, error) {
+	items := make([]dionysos.Storage, 0)
+	for rows.Next() {
+		var idStr string
+		var name string
+		if err := rows.Scan(&idStr, &name); nil != err {
+			return nil, fmt.Errorf("scanning rows of storage: %w", err)
+		}
+		id, err := uuid.Parse(idStr)
+		if err != nil {
+			return nil, fmt.Errorf("cannot convert storage id '%s' to UUID : %w", idStr, err)
+		}
+		items = append(items, dionysos.Storage{
+			ID:   id,
+			Name: name,
+		})
+	}
+
+	if err := rows.Err(); nil != err {
+		return nil, fmt.Errorf("parsing rows queried by storages: %w", err)
+	}
+
+	return items, nil
 }

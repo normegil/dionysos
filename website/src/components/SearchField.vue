@@ -17,10 +17,16 @@ import Vue from "vue";
 
 @Component
 export default class SearchField extends Vue {
-  searched = "";
+  get searched(): string {
+    return this.$store.state.search;
+  }
+
+  set searched(searched: string) {
+    this.$store.commit("setSearch", searched);
+  }
 
   search(): void {
-    console.log("Searching: " + this.searched);
+    this.$store.dispatch("search", this.$router);
   }
 }
 </script>

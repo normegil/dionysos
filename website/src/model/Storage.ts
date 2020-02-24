@@ -1,6 +1,8 @@
 import Rowable from "./Rowable";
+import Namable from "./Namable";
+import Identifiable from "./Identifiable";
 
-export default class Storage implements Rowable {
+export default class Storage implements Rowable, Identifiable, Namable {
   id: string;
   name: string;
 

@@ -36,6 +36,13 @@ var (
 			Name:      "port",
 		},
 	}
+	KeyAPIShowError = Key{
+		Name:        "api.errors.show",
+		Description: "show api error in log.",
+		CommandLine: CommandLineOption{
+			Name: "api-show-error",
+		},
+	}
 	KeyDatabaseAddress = Key{
 		Name:        "database.address",
 		Description: "address to connect to database.",

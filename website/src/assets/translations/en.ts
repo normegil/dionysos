@@ -4,6 +4,7 @@ export const ENGLISH_TRANSLATION = {
       main: {
         storages: "Storages",
         items: "Items",
+        search: "Search results",
         more: {
           title: "More",
           sub: {

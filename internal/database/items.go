@@ -8,6 +8,7 @@ import (
 	"github.com/normegil/dionysos/internal/model"
 	"github.com/normegil/postgres"
 	"github.com/rs/zerolog/log"
+	"strconv"
 )
 
 type ItemDAO struct {
@@ -40,27 +41,7 @@ func (dao *ItemDAO) LoadAll(opts model.CollectionOptions) ([]dionysos.Item, erro
 		}
 	}()
 
-	items := make([]dionysos.Item, 0)
-	for rows.Next() {
-		var idStr string
-		var name string
-		if err := rows.Scan(&idStr, &name); nil != err {
-			return nil, fmt.Errorf("scanning rows of items: %w", err)
-		}
-		id, err := uuid.Parse(idStr)
-		if err != nil {
-			return nil, fmt.Errorf("cannot convert id '%s' to UUID : %w", idStr, err)
-		}
-		items = append(items, dionysos.Item{
-			ID:   id,
-			Name: name,
-		})
-	}
-
-	if err := rows.Err(); nil != err {
-		return nil, fmt.Errorf("parsing rows queried by items: %w", err)
-	}
-	return items, nil
+	return dao.fromRows(rows)
 }
 
 func (dao ItemDAO) TotalNumberOfItem(filter string) (*model.Natural, error) {
@@ -100,4 +81,78 @@ func (dao ItemDAO) Delete(itemID uuid.UUID) error {
 		return fmt.Errorf("deleting item '%s': %w", itemID.String(), err)
 	}
 	return nil
+}
+
+func (dao ItemDAO) Search(params model.SearchParameters) (*model.SearchResult, error) {
+	query := `SELECT searchIndex.id, searchIndex.name
+				FROM (
+					 SELECT id, name, setweight(to_tsvector(name), 'A') as document
+					 FROM item
+				 ) searchIndex`
+	if 0 != len(params.Searches) {
+		query += " WHERE "
+	}
+	for i, _ := range params.Searches {
+		if i != 0 {
+			query += " OR "
+		}
+		query += "searchIndex.document @@ to_tsquery($" + strconv.Itoa(2*i+1) + ") OR searchIndex.document @@ $" + strconv.Itoa(2*i+2)
+	}
+
+	searches := make([]interface{}, 0)
+	for _, search := range params.Searches {
+		if "" == search {
+			searches = append(append(searches, "*"), "*")
+		} else {
+			modifiedSearchTerm := search + ":*"
+			searches = append(append(searches, modifiedSearchTerm), modifiedSearchTerm)
+		}
+	}
+	rows, err := dao.db.Query(query, searches...)
+	if err != nil {
+		return nil, fmt.Errorf("search for items with parameters %+v: %w", params, err)
+	}
+	defer func() {
+		if err := rows.Close(); nil != err {
+			log.Error().Err(err).Msgf("search items: could not close rows")
+		}
+	}()
+
+	items, err := dao.fromRows(rows)
+	interfaces := make([]interface{}, 0)
+	for _, item := range items {
+		interfaces = append(interfaces, item)
+	}
+	if nil != err {
+		return nil, fmt.Errorf("map search results to items: %w", err)
+	}
+	return &model.SearchResult{
+		Type:    "Item",
+		Results: interfaces,
+	}, nil
+}
+
+func (dao ItemDAO) fromRows(rows *sql.Rows) ([]dionysos.Item, error) {
+	items := make([]dionysos.Item, 0)
+	for rows.Next() {
+		var idStr string
+		var name string
+		if err := rows.Scan(&idStr, &name); nil != err {
+			return nil, fmt.Errorf("scanning rows of items: %w", err)
+		}
+		id, err := uuid.Parse(idStr)
+		if err != nil {
+			return nil, fmt.Errorf("cannot convert item id '%s' to UUID : %w", idStr, err)
+		}
+		items = append(items, dionysos.Item{
+			ID:   id,
+			Name: name,
+		})
+	}
+
+	if err := rows.Err(); nil != err {
+		return nil, fmt.Errorf("parsing rows queried by items: %w", err)
+	}
+
+	return items, nil
 }

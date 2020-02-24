@@ -44,6 +44,12 @@ func listen() (*cobra.Command, error) {
 		return nil, fmt.Errorf("binding parameter %s: %w", portKey.Name, err)
 	}
 
+	apiErrorShowKey := configuration.KeyAPIShowError
+	listenCmd.Flags().BoolP(apiErrorShowKey.CommandLine.Name, apiErrorShowKey.CommandLine.Shorthand, false, apiErrorShowKey.Description)
+	if err := viper.BindPFlag(apiErrorShowKey.Name, listenCmd.Flags().Lookup(apiErrorShowKey.CommandLine.Name)); err != nil {
+		return nil, fmt.Errorf("binding parameter %s: %w", apiErrorShowKey.Name, err)
+	}
+
 	databaseAddressKey := configuration.KeyDatabaseAddress
 	listenCmd.Flags().StringP(databaseAddressKey.CommandLine.Name, databaseAddressKey.CommandLine.Shorthand, "localhost", databaseAddressKey.Description)
 	if err := viper.BindPFlag(databaseAddressKey.Name, listenCmd.Flags().Lookup(databaseAddressKey.CommandLine.Name)); err != nil {
@@ -127,14 +133,23 @@ func listenRun(_ *cobra.Command, _ []string) {
 		}
 	}
 
+	searchDAO := database.SearchDAO{Searchables: []database.Searcheable{
+		itemDAO,
+		storageDAO,
+	}}
+
 	apiRoutes := make(map[string]http.Handler)
-	errorHandler := httperror.HTTPErrorHandler{}
+	errorHandler := httperror.HTTPErrorHandler{viper.GetBool(configuration.KeyAPIShowError.Name)}
 	apiRoutes["/storages"] = api.StorageController{
 		StorageDAO: storageDAO,
 		ErrHandler: errorHandler,
 	}.Route()
 	apiRoutes["/items"] = api.ItemController{
 		ItemDAO:    itemDAO,
+		ErrHandler: errorHandler,
+	}.Route()
+	apiRoutes["/searches"] = api.SearchController{
+		DAO:        searchDAO,
 		ErrHandler: errorHandler,
 	}.Route()
 	apiCtrl := internalHTTP.MultiController{
