@@ -6,32 +6,16 @@ import (
 	"github.com/google/uuid"
 	"github.com/normegil/dionysos"
 	"github.com/normegil/dionysos/internal/model"
-	"github.com/normegil/postgres"
 	"github.com/rs/zerolog/log"
 	"strconv"
 )
 
 type StorageDAO struct {
-	db *sql.DB
-}
-
-func NewStorageDAO(db *sql.DB, owner string) (*StorageDAO, error) {
-	queries := make(map[string]string)
-	queries["Table-Existence"] = `SELECT EXISTS ( SELECT 1 FROM information_schema.tables WHERE table_name = 'storage');`
-	queries["Table-Create"] = `CREATE TABLE storage ( id   uuid primary key, name varchar(300));`
-	queries["Table-Set-Owner"] = `ALTER TABLE storage OWNER TO $1;`
-	err := postgres.CreateTable(db, postgres.TableInfos{
-		Queries: queries,
-		Owner:   owner,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("creating table: %w", err)
-	}
-	return &StorageDAO{db}, nil
+	DB *sql.DB
 }
 
 func (dao *StorageDAO) LoadAll(opts model.CollectionOptions) ([]dionysos.Storage, error) {
-	rows, err := dao.db.Query(`SELECT * FROM storage WHERE UPPER(storage.name) LIKE UPPER($1) ORDER BY name LIMIT $2 OFFSET $3;`, toDatabaseFilter(opts.Filter), opts.Limit.Number(), opts.Offset.Number())
+	rows, err := dao.DB.Query(`SELECT * FROM storage WHERE UPPER(storage.name) LIKE UPPER($1) ORDER BY name LIMIT $2 OFFSET $3;`, toDatabaseFilter(opts.Filter), opts.Limit.Number(), opts.Offset.Number())
 	if err != nil {
 		return nil, fmt.Errorf("select all storages %+v: %w", opts, err)
 	}
@@ -65,7 +49,7 @@ func (dao *StorageDAO) LoadAll(opts model.CollectionOptions) ([]dionysos.Storage
 }
 
 func (dao StorageDAO) TotalNumberOfItem(filter string) (*model.Natural, error) {
-	row := dao.db.QueryRow(`SELECT count(*) FROM storage WHERE UPPER(storage.name) LIKE UPPER($1);`, toDatabaseFilter(filter))
+	row := dao.DB.QueryRow(`SELECT count(*) FROM storage WHERE UPPER(storage.name) LIKE UPPER($1);`, toDatabaseFilter(filter))
 	var total int
 	if err := row.Scan(&total); nil != err {
 		return nil, fmt.Errorf("counting number of storages: %w", err)
@@ -83,21 +67,21 @@ func (dao StorageDAO) Save(storage dionysos.Storage) (bool, error) {
 }
 
 func (dao *StorageDAO) Insert(storage dionysos.Storage) error {
-	if _, err := dao.db.Exec(`INSERT INTO storage(id, name) VALUES (gen_random_uuid(), $1)`, storage.Name); err != nil {
+	if _, err := dao.DB.Exec(`INSERT INTO storage(id, name) VALUES (gen_random_uuid(), $1)`, storage.Name); err != nil {
 		return fmt.Errorf("inserting %+v: %w", storage, err)
 	}
 	return nil
 }
 
 func (dao *StorageDAO) Update(storage dionysos.Storage) error {
-	if _, err := dao.db.Exec(`UPDATE storage SET name = $2 WHERE id = $1`, storage.ID, storage.Name); err != nil {
+	if _, err := dao.DB.Exec(`UPDATE storage SET name = $2 WHERE id = $1`, storage.ID, storage.Name); err != nil {
 		return fmt.Errorf("updating %+v: %w", storage, err)
 	}
 	return nil
 }
 
 func (dao StorageDAO) Delete(storageID uuid.UUID) error {
-	if _, err := dao.db.Exec(fmt.Sprintf("DELETE FROM storage WHERE id = '%s'", storageID.String())); nil != err {
+	if _, err := dao.DB.Exec(fmt.Sprintf("DELETE FROM storage WHERE id = '%s'", storageID.String())); nil != err {
 		return fmt.Errorf("deleting storage '%s': %w", storageID.String(), err)
 	}
 	return nil
@@ -128,7 +112,7 @@ func (dao StorageDAO) Search(params model.SearchParameters) (*model.SearchResult
 			searches = append(append(searches, modifiedSearchTerm), modifiedSearchTerm)
 		}
 	}
-	rows, err := dao.db.Query(query, searches...)
+	rows, err := dao.DB.Query(query, searches...)
 	if err != nil {
 		return nil, fmt.Errorf("search for storages with parameter %+v: %w", params, err)
 	}

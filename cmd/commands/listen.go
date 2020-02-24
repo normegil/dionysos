@@ -104,16 +104,13 @@ func listenRun(_ *cobra.Command, _ []string) {
 		}
 	}()
 
-	storageDAO, err := database.NewStorageDAO(db, dbCfg.User)
-	if err != nil {
-		log.Fatal().Err(err).Msg("creating storage dao")
+	manager, err := database.NewVersionManager(db)
+	if err = manager.UpgradeAll(); nil != err {
+		log.Fatal().Err(err).Msg("upgrading database")
 	}
 
-	itemDAO, err := database.NewItemDAO(db, dbCfg.User)
-	if err != nil {
-		log.Fatal().Err(err).Msg("creating item dao")
-	}
-
+	storageDAO := &database.StorageDAO{DB: db}
+	itemDAO := &database.ItemDAO{DB: db}
 	if viper.GetBool(configuration.KeyDummyData.Name) {
 		log.Info().Msg("insert dummy data")
 		const dummyItemNb = 50

@@ -6,32 +6,16 @@ import (
 	"github.com/google/uuid"
 	"github.com/normegil/dionysos"
 	"github.com/normegil/dionysos/internal/model"
-	"github.com/normegil/postgres"
 	"github.com/rs/zerolog/log"
 	"strconv"
 )
 
 type ItemDAO struct {
-	db *sql.DB
-}
-
-func NewItemDAO(db *sql.DB, owner string) (*ItemDAO, error) {
-	queries := make(map[string]string)
-	queries["Table-Existence"] = `SELECT EXISTS ( SELECT 1 FROM information_schema.tables WHERE table_name = 'item');`
-	queries["Table-Create"] = `CREATE TABLE item ( id   uuid primary key, name varchar(300));`
-	queries["Table-Set-Owner"] = `ALTER TABLE item OWNER TO $1;`
-	err := postgres.CreateTable(db, postgres.TableInfos{
-		Queries: queries,
-		Owner:   owner,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("creating table: %w", err)
-	}
-	return &ItemDAO{db}, nil
+	DB *sql.DB
 }
 
 func (dao *ItemDAO) LoadAll(opts model.CollectionOptions) ([]dionysos.Item, error) {
-	rows, err := dao.db.Query(`SELECT * FROM item WHERE UPPER(item.name) LIKE UPPER($1) ORDER BY name LIMIT $2 OFFSET $3;`, toDatabaseFilter(opts.Filter), opts.Limit.Number(), opts.Offset.Number())
+	rows, err := dao.DB.Query(`SELECT * FROM item WHERE UPPER(item.name) LIKE UPPER($1) ORDER BY name LIMIT $2 OFFSET $3;`, toDatabaseFilter(opts.Filter), opts.Limit.Number(), opts.Offset.Number())
 	if err != nil {
 		return nil, fmt.Errorf("select all items %+v: %w", opts, err)
 	}
@@ -45,7 +29,7 @@ func (dao *ItemDAO) LoadAll(opts model.CollectionOptions) ([]dionysos.Item, erro
 }
 
 func (dao ItemDAO) TotalNumberOfItem(filter string) (*model.Natural, error) {
-	row := dao.db.QueryRow(`SELECT count(*) FROM item WHERE UPPER(item.name) LIKE UPPER($1);`, toDatabaseFilter(filter))
+	row := dao.DB.QueryRow(`SELECT count(*) FROM item WHERE UPPER(item.name) LIKE UPPER($1);`, toDatabaseFilter(filter))
 	var total int
 	if err := row.Scan(&total); nil != err {
 		return nil, fmt.Errorf("counting number of items: %w", err)
@@ -63,21 +47,21 @@ func (dao ItemDAO) Save(item dionysos.Item) (bool, error) {
 }
 
 func (dao *ItemDAO) Insert(item dionysos.Item) error {
-	if _, err := dao.db.Exec(`INSERT INTO item(id, name) VALUES (gen_random_uuid(), $1)`, item.Name); err != nil {
+	if _, err := dao.DB.Exec(`INSERT INTO item(id, name) VALUES (gen_random_uuid(), $1)`, item.Name); err != nil {
 		return fmt.Errorf("inserting %+v: %w", item, err)
 	}
 	return nil
 }
 
 func (dao *ItemDAO) Update(item dionysos.Item) error {
-	if _, err := dao.db.Exec(`UPDATE item SET name = $2 WHERE id = $1`, item.ID, item.Name); err != nil {
+	if _, err := dao.DB.Exec(`UPDATE item SET name = $2 WHERE id = $1`, item.ID, item.Name); err != nil {
 		return fmt.Errorf("updating %+v: %w", item, err)
 	}
 	return nil
 }
 
 func (dao ItemDAO) Delete(itemID uuid.UUID) error {
-	if _, err := dao.db.Exec(fmt.Sprintf("DELETE FROM item WHERE id = '%s'", itemID.String())); nil != err {
+	if _, err := dao.DB.Exec(fmt.Sprintf("DELETE FROM item WHERE id = '%s'", itemID.String())); nil != err {
 		return fmt.Errorf("deleting item '%s': %w", itemID.String(), err)
 	}
 	return nil
@@ -108,7 +92,7 @@ func (dao ItemDAO) Search(params model.SearchParameters) (*model.SearchResult, e
 			searches = append(append(searches, modifiedSearchTerm), modifiedSearchTerm)
 		}
 	}
-	rows, err := dao.db.Query(query, searches...)
+	rows, err := dao.DB.Query(query, searches...)
 	if err != nil {
 		return nil, fmt.Errorf("search for items with parameters %+v: %w", params, err)
 	}
