@@ -24,7 +24,7 @@ func (v VersionCreation) Apply() error {
 	err := postgres.CreateTable(v.DB, postgres.TableInfos{
 		Queries: map[string]string{
 			"Table-Existence": fmt.Sprintf(tableExistence, versionTableName),
-			"Table-Create":    `CREATE TABLE version (id uuid primary key, version integer, modificationTime time)`,
+			"Table-Create":    `CREATE TABLE version (id uuid primary key, version integer, modificationTime timestamp)`,
 			"Table-Set-Owner": fmt.Sprintf(tableSetOwner, versionTableName),
 		},
 		Owner: owner,
