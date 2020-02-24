@@ -6,9 +6,9 @@ require (
 	github.com/Microsoft/go-winio v0.4.14 // indirect
 	github.com/alexedwards/scs/v2 v2.2.0
 	github.com/brianvoe/gofakeit v3.18.0+incompatible
+	github.com/casbin/casbin v1.9.1
 	github.com/docker/distribution v2.7.1+incompatible // indirect
 	github.com/docker/go-units v0.4.0 // indirect
-	github.com/casbin/casbin v1.9.1
 	github.com/go-chi/chi v4.0.2+incompatible
 	github.com/google/uuid v1.1.1
 	github.com/lib/pq v1.3.0
