@@ -79,7 +79,7 @@ export default class CollectionStore<FinalType, DTO>
           return ctx.dispatch("refreshItems", r.data);
         })
         .catch((err: AxiosError) => {
-          console.log(err);
+          console.error(err);
         });
     },
     save: (
@@ -91,7 +91,7 @@ export default class CollectionStore<FinalType, DTO>
           return ctx.dispatch("load");
         })
         .catch((err: AxiosError) => {
-          console.log(err);
+          console.error(err);
         });
     },
     delete: (
@@ -103,7 +103,7 @@ export default class CollectionStore<FinalType, DTO>
           return ctx.dispatch("load");
         })
         .catch((err: AxiosError) => {
-          console.log(err);
+          console.error(err);
         });
     },
     refreshItems: (
