@@ -1,12 +1,15 @@
 package security
 
 import (
+	"context"
 	"fmt"
 	"github.com/alexedwards/scs/v2"
 	httperror "github.com/normegil/dionysos/internal/http/error"
 	"net/http"
 	"time"
 )
+
+const keySessionUser = "user"
 
 type SessionHandler struct {
 	SessionManager *scs.SessionManager
@@ -25,6 +28,11 @@ func (s SessionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		s.ErrHandler.Handle(w, fmt.Errorf("could not load session: %w", err))
 		return
+	}
+
+	user := ctx.Value(keySessionUser)
+	if nil != user {
+		ctx = context.WithValue(ctx, KeyUser, user)
 	}
 
 	sr := r.WithContext(ctx)
@@ -86,6 +94,6 @@ func (a AuthenticatedUserSessionUpdater) RenewSessionOnAuthenticatedUser(r *http
 	if err := a.SessionManager.RenewToken(r.Context()); nil != err {
 		return fmt.Errorf("could not renew session token: %w", err)
 	}
-	a.SessionManager.Put(r.Context(), "user", username)
+	a.SessionManager.Put(r.Context(), keySessionUser, username)
 	return nil
 }
