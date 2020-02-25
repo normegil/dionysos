@@ -16,7 +16,7 @@ interface LoginInformations {
 export const AUTH: Module<AuthState, RootState> = {
   namespaced: true,
   state: {
-    showLoginModal: true
+    showLoginModal: false
   },
   mutations: {
     setShowLoginModal: (state, show: boolean): void => {

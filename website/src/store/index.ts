@@ -1,14 +1,16 @@
-import { StoreOptions } from "vuex";
+import Vuex from "vuex";
 import { ITEMS } from "./items";
 import { STORAGES } from "./storages";
-import { RootState } from "./model";
 import SearchResult, { PrintableResult } from "../model/SearchResult";
 import { VueRouter } from "vue-router/types/router";
 import { API } from "./http";
 import { AxiosError, AxiosResponse } from "axios";
 import { AUTH } from "./auth";
+import Vue from "vue";
 
-export const STORE_OPTIONS: StoreOptions<RootState> = {
+Vue.use(Vuex);
+
+export const STORE = new Vuex.Store({
   state: {
     search: "",
     searchResults: []
@@ -51,7 +53,7 @@ export const STORE_OPTIONS: StoreOptions<RootState> = {
     storages: STORAGES,
     auth: AUTH
   }
-};
+});
 
 interface SearchResponse {
   results: SearchResult<PrintableResult>[];
