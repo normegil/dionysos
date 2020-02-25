@@ -2,7 +2,6 @@ package security
 
 import (
 	"fmt"
-	"github.com/normegil/dionysos/internal/model"
 )
 
 type DatabaseAuthentication struct {
@@ -22,5 +21,5 @@ func (a DatabaseAuthentication) Authenticate(username string, password string) (
 }
 
 type UserDAO interface {
-	Load(username string) (model.User, error)
+	Load(username string) (*User, error)
 }

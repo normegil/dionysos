@@ -31,6 +31,7 @@ func (h HTTPErrorHandler) Handle(w http.ResponseWriter, err error) {
 	if marshalErr != nil {
 		log.Error().Err(marshalErr).Interface("HTTPError", resp).Msg("Could not marshal HTTPError")
 	}
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(resp.Status)
 	if _, writeErr := w.Write(bytes); nil != writeErr {
 		log.Error().Err(writeErr).Interface("HTTPError", resp).Msg("Could not write response with HTTPError")

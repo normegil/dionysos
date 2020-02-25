@@ -52,6 +52,7 @@ func (c SearchController) search(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	if _, err := w.Write(marshalled); err != nil {
 		c.ErrHandler.Handle(w, fmt.Errorf("write response body: %w", err))
 		return

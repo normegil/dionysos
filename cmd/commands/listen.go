@@ -3,16 +3,16 @@ package commands
 import (
 	"context"
 	"fmt"
-	"github.com/brianvoe/gofakeit"
 	"github.com/go-chi/chi"
 	"github.com/markbates/pkger"
-	"github.com/normegil/dionysos"
 	"github.com/normegil/dionysos/internal/configuration"
 	"github.com/normegil/dionysos/internal/database"
 	internalHTTP "github.com/normegil/dionysos/internal/http"
 	"github.com/normegil/dionysos/internal/http/api"
 	httperror "github.com/normegil/dionysos/internal/http/error"
 	"github.com/normegil/dionysos/internal/http/middleware"
+	securitymiddleware "github.com/normegil/dionysos/internal/http/middleware/security"
+	"github.com/normegil/dionysos/internal/security"
 	"github.com/normegil/postgres"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -105,31 +105,19 @@ func listenRun(_ *cobra.Command, _ []string) {
 	}()
 
 	manager, err := database.NewVersionManager(db)
+	if err != nil {
+		log.Fatal().Err(err).Msg("instantiate version manager")
+	}
 	if err = manager.UpgradeAll(); nil != err {
 		log.Fatal().Err(err).Msg("upgrading database")
 	}
 
-	storageDAO := &database.StorageDAO{DB: db}
-	itemDAO := &database.ItemDAO{DB: db}
-	if viper.GetBool(configuration.KeyDummyData.Name) {
-		log.Info().Msg("insert dummy data")
-		const dummyItemNb = 50
-
-		for i := 0; i < dummyItemNb; i++ {
-			storage := dionysos.Storage{Name: gofakeit.Company()}
-			if err := storageDAO.Insert(storage); nil != err {
-				log.Fatal().Err(err).Msgf("inserting %+v", storage)
-			}
-		}
-
-		for i := 0; i < dummyItemNb; i++ {
-			item := dionysos.Item{Name: gofakeit.BeerName()}
-			if err := itemDAO.Insert(item); nil != err {
-				log.Fatal().Err(err).Msgf("inserting %+v", item)
-			}
-		}
+	if err := database.InsertDummyData(db); nil != err {
+		log.Fatal().Err(err).Msg("inserting dummy data")
 	}
 
+	itemDAO := &database.ItemDAO{DB: db}
+	storageDAO := &database.StorageDAO{DB: db}
 	searchDAO := database.SearchDAO{Searchables: []database.Searcheable{
 		itemDAO,
 		storageDAO,
@@ -157,8 +145,17 @@ func listenRun(_ *cobra.Command, _ []string) {
 			})
 		},
 	}
+
+	userDAO := &database.UserDAO{DB: db}
+	authenticator := security.DatabaseAuthentication{DAO: userDAO}
+
 	routes := make(map[string]http.Handler)
-	routes["/api"] = apiCtrl.Route()
+	routes["/api"] = securitymiddleware.AuthenticationHandler{
+		ErrorHandler:    errorHandler,
+		Authenticator:   authenticator,
+		OnAuthenticated: nil,
+		Handler:         apiCtrl.Route(),
+	}
 	routes["/"] = http.FileServer(pkger.Dir("/website/dist"))
 
 	addr := net.TCPAddr{

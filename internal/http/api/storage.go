@@ -67,6 +67,7 @@ func (c StorageController) loadAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	if _, err := w.Write(bytes); nil != err {
 		c.ErrHandler.Handle(w, err)

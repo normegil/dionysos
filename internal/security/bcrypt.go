@@ -24,7 +24,8 @@ func (b Bcrypt) HashAndSalt(password string) ([]byte, error) {
 }
 
 func (b Bcrypt) Validate(hash []byte, password string) error {
-	return bcrypt.CompareHashAndPassword(hash, []byte(password))
+	err := bcrypt.CompareHashAndPassword(hash, []byte(password))
+	return invalidPasswordError{Original: err}
 }
 
 var (

@@ -1,6 +1,7 @@
 package security
 
 import (
+	"fmt"
 	"github.com/google/uuid"
 )
 
@@ -26,3 +27,11 @@ var (
 		HashAlgorithmBcrypt14,
 	})
 )
+
+type invalidPasswordError struct {
+	Original error
+}
+
+func (e invalidPasswordError) Error() string {
+	return fmt.Errorf("invalid password: %w", e.Original).Error()
+}

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	httperror "github.com/normegil/dionysos/internal/http/error"
+	"github.com/normegil/dionysos/internal/security"
 	"net/http"
 )
 
@@ -12,7 +13,7 @@ const KeyUser string = "authenticated-user"
 const AnonymousUser string = "anonymous"
 
 type Authenticator interface {
-	Authenticate(username string, password string) bool
+	Authenticate(username string, password string) (bool, error)
 }
 
 type AuthenticationHandler struct {
@@ -27,7 +28,12 @@ func (a AuthenticationHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	if !ok {
 		r = r.WithContext(context.WithValue(r.Context(), KeyUser, AnonymousUser))
 	} else {
-		if a.Authenticator.Authenticate(username, password) {
+		authenticated, err := a.Authenticator.Authenticate(username, password)
+		if err != nil && !security.IsInvalidPassword(err) {
+			a.ErrorHandler.Handle(w, fmt.Errorf("error during authentication: %w", err))
+			return
+		}
+		if authenticated {
 			r = r.WithContext(context.WithValue(r.Context(), KeyUser, username))
 			if nil != a.OnAuthenticated {
 				if err := a.OnAuthenticated(username); nil != err {
@@ -41,6 +47,7 @@ func (a AuthenticationHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 				Status: http.StatusUnauthorized,
 				Err:    errors.New("authentication failed: wrong user and/or password"),
 			})
+			return
 		}
 	}
 

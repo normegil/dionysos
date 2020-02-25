@@ -18,7 +18,7 @@ func (v SchemaCreation) Apply() error {
 	}
 
 	tableExistence := `SELECT EXISTS ( SELECT 1 FROM information_schema.tables WHERE table_name = '%s');`
-	tableSetOwner := `ALTER TABLE %s OWNER TO $1;`
+	tableSetOwner := `ALTER TABLE "%s" OWNER TO $1;`
 
 	itemTableName := "item"
 	err := postgres.CreateTable(v.DB, postgres.TableInfos{

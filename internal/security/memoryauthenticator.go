@@ -5,12 +5,12 @@ type MemoryAuthenticator struct {
 	Password string
 }
 
-func (a MemoryAuthenticator) Authenticate(username string, password string) bool {
+func (a MemoryAuthenticator) Authenticate(username string, password string) (bool, error) {
 	if username != a.Username {
-		return false
+		return false, nil
 	}
 	if password != a.Password {
-		return false
+		return false, nil
 	}
-	return true
+	return true, nil
 }
