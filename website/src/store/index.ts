@@ -6,6 +6,7 @@ import SearchResult, { PrintableResult } from "../model/SearchResult";
 import { VueRouter } from "vue-router/types/router";
 import { HTTP } from "./http";
 import { AxiosError, AxiosResponse } from "axios";
+import { AUTH } from "./auth";
 
 export const STORE_OPTIONS: StoreOptions<RootState> = {
   state: {
@@ -47,7 +48,8 @@ export const STORE_OPTIONS: StoreOptions<RootState> = {
   },
   modules: {
     items: ITEMS,
-    storages: STORAGES
+    storages: STORAGES,
+    auth: AUTH
   }
 };
 

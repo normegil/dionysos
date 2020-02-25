@@ -7,24 +7,41 @@
       :for="this._uid"
       class="field__label"
       :class="{ 'field__label--disabled': disabled }"
-      v-if="label !== ''"
+      v-if="labelEnabled"
       >{{ label }}</label
     >
     <input
       :id="this._uid"
       class="field__input"
       :class="{
-        'field__input--left-rounded': label === '',
-        'field__input--right-rounded': button === ''
+        'left-rounded': !labelEnabled && !password,
+        'right-rounded': !buttonEnabled && !password
       }"
       :value="value"
       :placeholder="placeholder"
       @input="$emit('input', $event.target.value)"
       @keyup.enter="$emit('keyup-enter')"
       :disabled="disabled"
+      :type="fieldType"
     />
+    <input
+      v-if="password"
+      type="checkbox"
+      v-model="showPassword"
+      id="password-checkbox"
+      class="field__password-checkbox"
+    /><label
+      v-if="password"
+      for="password-checkbox"
+      class="field__password-checkbox-label"
+      :class="{
+        'right-rounded': !buttonEnabled,
+        'las la-eye': !showPassword,
+        'las la-eye-slash': showPassword
+      }"
+    ></label>
     <a
-      v-if="button !== ''"
+      v-if="buttonEnabled"
       class="field__button"
       @click.stop="$emit('button-click')"
     >
@@ -54,6 +71,26 @@ export default class InputField extends Vue {
 
   @Prop({ default: false, required: false })
   disabled!: boolean;
+
+  @Prop({ default: false, required: false })
+  password!: boolean;
+
+  showPassword = false;
+
+  get fieldType(): string {
+    if (this.password && !this.showPassword) {
+      return "password";
+    }
+    return "text";
+  }
+
+  get labelEnabled(): boolean {
+    return this.label !== "";
+  }
+
+  get buttonEnabled(): boolean {
+    return this.button !== "";
+  }
 }
 </script>
 
@@ -109,16 +146,6 @@ export default class InputField extends Vue {
     &--disabled {
       cursor: not-allowed;
     }
-
-    &--left-rounded {
-      border-bottom-left-radius: 5px;
-      border-top-left-radius: 5px;
-    }
-
-    &--right-rounded {
-      border-bottom-right-radius: 5px;
-      border-top-right-radius: 5px;
-    }
   }
 
   &__button {
@@ -132,5 +159,28 @@ export default class InputField extends Vue {
       background: $color-grey-light-2;
     }
   }
+
+  &__password-checkbox {
+    display: none;
+  }
+
+  &__password-checkbox-label {
+    background-color: #ffffff;
+    padding: 0.6rem 1rem;
+
+    &:hover,
+    &:active {
+      color: $color-primary;
+    }
+  }
+}
+.left-rounded {
+  border-bottom-left-radius: 5px;
+  border-top-left-radius: 5px;
+}
+
+.right-rounded {
+  border-bottom-right-radius: 5px;
+  border-top-right-radius: 5px;
 }
 </style>

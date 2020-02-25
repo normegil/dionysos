@@ -19,7 +19,8 @@ export const FRENCH_TRANSLATION = {
       search: "Recherche",
       add: "Ajouter",
       save: "Sauvegarder",
-      cancel: "Annuler"
+      cancel: "Annuler",
+      login: "Se connecter"
     },
     modal: {
       item: {
@@ -37,6 +38,11 @@ export const FRENCH_TRANSLATION = {
         },
         id: "ID",
         name: "Nom"
+      },
+      login: {
+        title: "Se connecter",
+        username: "Utilisateur",
+        password: "Mot de passe"
       }
     },
     components: {

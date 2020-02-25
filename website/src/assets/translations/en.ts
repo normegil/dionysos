@@ -19,7 +19,8 @@ export const ENGLISH_TRANSLATION = {
       search: "Search",
       add: "Add",
       save: "Save",
-      cancel: "Cancel"
+      cancel: "Cancel",
+      login: "Login"
     },
     modal: {
       item: {
@@ -37,6 +38,11 @@ export const ENGLISH_TRANSLATION = {
         },
         id: "ID",
         name: "Name"
+      },
+      login: {
+        title: "Login",
+        username: "User",
+        password: "Password"
       }
     },
     components: {
