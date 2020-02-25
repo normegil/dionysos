@@ -46,11 +46,33 @@ func (v SchemaCreation) Apply() error {
 		return fmt.Errorf("creating table '%s': %w", storageTableName, err)
 	}
 
+	userTableName := "user"
+	err = postgres.CreateTable(v.DB, postgres.TableInfos{
+		Queries: map[string]string{
+			"Table-Existence": fmt.Sprintf(tableExistence, userTableName),
+			"Table-Create": `CREATE TABLE "user" (
+				id uuid primary key,
+				name varchar(300) unique,
+				hash bytea,
+				algorithmID uuid);`,
+			"Table-Set-Owner": fmt.Sprintf(tableSetOwner, userTableName),
+		},
+		Owner: owner,
+	})
+	if err != nil {
+		return fmt.Errorf("creating table '%s': %w", userTableName, err)
+	}
+
 	return nil
 }
 
 func (v SchemaCreation) Rollback() error {
 	dropTableQuery := "DROP TABLE %s"
+
+	userTableName := "user"
+	if _, err := v.DB.Exec(fmt.Sprintf(dropTableQuery, userTableName)); nil != err {
+		return fmt.Errorf("drop table '%s': %w", userTableName, err)
+	}
 
 	storageTableName := "storage"
 	if _, err := v.DB.Exec(fmt.Sprintf(dropTableQuery, storageTableName)); nil != err {

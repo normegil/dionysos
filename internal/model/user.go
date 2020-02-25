@@ -1,28 +1,32 @@
 package model
 
 import (
+	"fmt"
 	"github.com/google/uuid"
-	"golang.org/x/crypto/bcrypt"
+	"github.com/normegil/dionysos/internal/security"
 )
 
 type User struct {
-	ID                uuid.UUID
-	Name              string
-	PasswordHash      string
-	PasswordSalt      string
-	PasswordAlgorithm HashAlgorithm
+	ID            uuid.UUID
+	Name          string
+	PasswordHash  []byte
+	HashAlgorithm security.HashAlgorithm
 }
 
-func NewUser(name, password string) *User {
-	return &User{
-		ID:                uuid.Nil,
-		Name:              name,
-		PasswordHash:      "",
-		PasswordSalt:      "",
-		PasswordAlgorithm: ,
+func NewUser(name, password string) (*User, error) {
+	hashAlgorithm := security.HashAlgorithmBcrypt14
+	hash, err := hashAlgorithm.HashAndSalt(password)
+	if err != nil {
+		return nil, fmt.Errorf("hash password of new user")
 	}
+	return &User{
+		ID:            uuid.Nil,
+		Name:          name,
+		PasswordHash:  hash,
+		HashAlgorithm: hashAlgorithm,
+	}, nil
 }
 
-func (u User) ValidatePassword(password string) bool {
-
+func (u User) ValidatePassword(password string) error {
+	return u.HashAlgorithm.Validate(u.PasswordHash, password)
 }

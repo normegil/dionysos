@@ -14,7 +14,11 @@ func (a DatabaseAuthentication) Authenticate(username string, password string) (
 	if err != nil {
 		return false, fmt.Errorf("loading user '%s': %w", username, err)
 	}
-	return user.ValidatePassword(password), nil
+	err = user.ValidatePassword(password)
+	if err != nil {
+		return false, fmt.Errorf("validation failed: %w", err)
+	}
+	return true, nil
 }
 
 type UserDAO interface {
