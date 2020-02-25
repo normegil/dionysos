@@ -12,9 +12,10 @@ import (
 const keySessionUser = "user"
 
 type SessionHandler struct {
-	SessionManager *scs.SessionManager
-	ErrHandler     httperror.HTTPErrorHandler
-	Handler        http.Handler
+	SessionManager       *scs.SessionManager
+	RequestAuthenticator RequestAuthenticator
+	ErrHandler           httperror.HTTPErrorHandler
+	Handler              http.Handler
 }
 
 func (s SessionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -36,7 +37,10 @@ func (s SessionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sr := r.WithContext(ctx)
-	s.Handler.ServeHTTP(w, sr)
+	if err := s.RequestAuthenticator.Authenticate(sr); nil != err {
+		s.ErrHandler.Handle(w, err)
+		return
+	}
 
 	switch s.SessionManager.Status(ctx) {
 	case scs.Unmodified:
@@ -51,6 +55,8 @@ func (s SessionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case scs.Destroyed:
 		s.writeSession(w, "", time.Time{})
 	}
+
+	s.Handler.ServeHTTP(w, sr)
 }
 
 func (s SessionHandler) writeSession(w http.ResponseWriter, token string, expiry time.Time) {

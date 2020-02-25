@@ -124,11 +124,11 @@ func listenRun(_ *cobra.Command, _ []string) {
 func ToServerHandler(db *sql.DB) middleware.RequestLogger {
 	sessionManager := scs.New()
 	router := internalHTTP.NewRouter(Route(db, sessionManager))
-	anonymousUserSetter := securitymiddleware.AnonymousUserSetter{Handler: router}
 	sessionHandler := securitymiddleware.SessionHandler{
-		SessionManager: sessionManager,
-		ErrHandler:     ErrorHandler(),
-		Handler:        anonymousUserSetter,
+		SessionManager:       sessionManager,
+		RequestAuthenticator: NewRequestAuthenticator(database.UserDAO{DB: db}, sessionManager),
+		ErrHandler:           ErrorHandler(),
+		Handler:              router,
 	}
 	handler := middleware.RequestLogger{Handler: sessionHandler}
 	return handler
@@ -222,18 +222,13 @@ func Route(db *sql.DB, sessionManager *scs.SessionManager) map[string]http.Handl
 	}
 
 	userDAO := &database.UserDAO{DB: db}
-	requestAuthenticator := NewRequestAuthenticator(userDAO, sessionManager)
 
 	routes := make(map[string]http.Handler)
-	routes["/api"] = securitymiddleware.AuthenticationHandler{
-		ErrorHandler:         ErrorHandler(),
-		RequestAuthenticator: requestAuthenticator,
-		Handler: apiCtrl.Route(),
-	}
+	routes["/api"] = apiCtrl.Route()
 	routes["/"] = http.FileServer(pkger.Dir("/website/dist"))
 	routes["/auth"] = api.AuthController{
 		ErrHandler:           errorHandler,
-		RequestAuthenticator: requestAuthenticator,
+		RequestAuthenticator: NewRequestAuthenticator(userDAO, sessionManager),
 	}.Route()
 	return routes
 }
