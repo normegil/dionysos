@@ -2,9 +2,11 @@ package database
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/normegil/dionysos/internal/security"
+	"strings"
 )
 
 type UserDAO struct {
@@ -18,6 +20,12 @@ func (d UserDAO) Load(username string) (*security.User, error) {
 	var hash []byte
 	var algorithmID uuid.UUID
 	if err := row.Scan(&id, &name, &hash, &algorithmID); nil != err {
+		if strings.Contains(err.Error(), "no rows in result set") {
+			return nil, userNotExistError{
+				Username: username,
+				Original: err,
+			}
+		}
 		return nil, fmt.Errorf("loading user '%s': %w", username, err)
 	}
 	algorithm := security.AllHashAlgorithms.FindByID(algorithmID)
@@ -37,4 +45,18 @@ func (d UserDAO) Insert(user security.User) error {
 		return fmt.Errorf("inserting %s: %w", user.Name, err)
 	}
 	return nil
+}
+
+type userNotExistError struct {
+	Username string
+	Original error
+}
+
+func (e userNotExistError) Error() string {
+	return fmt.Errorf("databse user '%s' doesn't exist: %w", e.Username, e.Original).Error()
+}
+
+
+func (d UserDAO) IsUserNotExistError(err error) bool {
+	return errors.As(err, &userNotExistError{})
 }

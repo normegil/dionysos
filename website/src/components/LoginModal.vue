@@ -1,6 +1,6 @@
 <template>
   <Modal :title="$t('ui.modal.login.title')" :show="show" @close="close">
-    <div class="login-modal__content" @keyup.enter="login">
+    <div class="login-modal__content" @keyup.enter="signIn">
       <InputField
         class="login-modal__field"
         v-model="username"
@@ -14,7 +14,7 @@
       />
     </div>
     <template v-slot:actions>
-      <Button :title="$t('ui.button.login')" @click="login" />
+      <Button :title="$t('ui.button.login')" @click="signIn" />
     </template>
   </Modal>
 </template>
@@ -25,23 +25,26 @@ import Vue from "vue";
 import Modal from "./Modal.vue";
 import InputField from "./InputField.vue";
 import Button from "./Button.vue";
-import { Prop } from "vue-property-decorator";
 @Component({
   components: { Modal, InputField, Button }
 })
 export default class LoginModal extends Vue {
-  @Prop({ required: true })
-  show!: boolean;
-
   username = "";
   password = "";
 
-  login() {
-    console.log("Login: " + this.username + ":" + this.password);
+  get show(): boolean {
+    return this.$store.state.auth.showLoginModal;
   }
 
-  close() {
-    this.$emit("close");
+  signIn(): void {
+    this.$store.dispatch("auth/signIn", {
+      username: this.username,
+      password: this.password
+    });
+  }
+
+  close(): void {
+    this.$store.commit("auth/setShowLoginModal", false);
   }
 }
 </script>

@@ -4,7 +4,7 @@ import { STORAGES } from "./storages";
 import { RootState } from "./model";
 import SearchResult, { PrintableResult } from "../model/SearchResult";
 import { VueRouter } from "vue-router/types/router";
-import { HTTP } from "./http";
+import { API } from "./http";
 import { AxiosError, AxiosResponse } from "axios";
 import { AUTH } from "./auth";
 
@@ -31,7 +31,7 @@ export const STORE_OPTIONS: StoreOptions<RootState> = {
         console.error("Search query is empty");
         return;
       }
-      HTTP.put("/searches", {
+      API.put("/searches", {
         search: ctx.state.search
       })
         .then((r: AxiosResponse<SearchResponse>) => {

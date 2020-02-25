@@ -11,6 +11,12 @@ type DatabaseAuthentication struct {
 func (a DatabaseAuthentication) Authenticate(username string, password string) (bool, error) {
 	user, err := a.DAO.Load(username)
 	if err != nil {
+		if a.DAO.IsUserNotExistError(err) {
+			return false, userNotExistError{
+				Username: username,
+				Original: err,
+			}
+		}
 		return false, fmt.Errorf("loading user '%s': %w", username, err)
 	}
 	err = user.ValidatePassword(password)
@@ -22,4 +28,5 @@ func (a DatabaseAuthentication) Authenticate(username string, password string) (
 
 type UserDAO interface {
 	Load(username string) (*User, error)
+	IsUserNotExistError(err error) bool
 }

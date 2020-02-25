@@ -1,6 +1,11 @@
 import Axios from "axios";
 
-export const HTTP = Axios.create({
+export const Server = Axios.create({
+  baseURL: window.location.origin,
+  timeout: 5000
+});
+
+export const API = Axios.create({
   baseURL: window.location.origin + "/api/",
-  timeout: 1000
+  timeout: 5000
 });

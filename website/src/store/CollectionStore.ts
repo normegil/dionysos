@@ -1,6 +1,6 @@
 import { ActionContext, Module } from "vuex";
 import { RootState } from "./model";
-import { HTTP } from "./http";
+import { API } from "./http";
 import { AxiosError, AxiosResponse } from "axios";
 
 interface Collection<T> {
@@ -74,7 +74,7 @@ export default class CollectionStore<FinalType, DTO>
       if (ctx.state.filter !== "") {
         url += ";filter=" + ctx.state.filter;
       }
-      HTTP.get(url)
+      API.get(url)
         .then((r: AxiosResponse<CollectionResponse<DTO>>) => {
           return ctx.dispatch("refreshItems", r.data);
         })
@@ -86,7 +86,7 @@ export default class CollectionStore<FinalType, DTO>
       ctx: ActionContext<Collection<FinalType>, RootState>,
       item: DTO
     ): void => {
-      HTTP.put("/" + this.webServicePrefix, item)
+      API.put("/" + this.webServicePrefix, item)
         .then(() => {
           return ctx.dispatch("load");
         })
@@ -98,7 +98,7 @@ export default class CollectionStore<FinalType, DTO>
       ctx: ActionContext<Collection<FinalType>, RootState>,
       id: string
     ): void => {
-      HTTP.delete("/" + this.webServicePrefix + "/" + id)
+      API.delete("/" + this.webServicePrefix + "/" + id)
         .then(() => {
           return ctx.dispatch("load");
         })

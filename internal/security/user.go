@@ -16,14 +16,19 @@ func NewUser(name, password string) (*User, error) {
 	hashAlgorithm := HashAlgorithmBcrypt14
 	hash, err := hashAlgorithm.HashAndSalt(password)
 	if err != nil {
-		return nil, fmt.Errorf("hash password of new user")
+		return nil, fmt.Errorf("hash password of new user: %w", err)
 	}
-	return &User{
+	u := &User{
 		ID:            uuid.Nil,
 		Name:          name,
 		PasswordHash:  hash,
 		HashAlgorithm: hashAlgorithm,
-	}, nil
+	}
+	err = u.ValidatePassword(password)
+	if err != nil {
+		return nil, fmt.Errorf("validating generated hash '%s': %w", hash, err)
+	}
+	return u, nil
 }
 
 func (u User) ValidatePassword(password string) error {

@@ -2,7 +2,9 @@ package commands
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
+	"github.com/alexedwards/scs/v2"
 	"github.com/go-chi/chi"
 	"github.com/markbates/pkger"
 	"github.com/normegil/dionysos/internal/configuration"
@@ -93,29 +95,101 @@ func listenRun(_ *cobra.Command, _ []string) {
 	stopHTTPServer := make(chan os.Signal, 1)
 	signal.Notify(stopHTTPServer, os.Interrupt)
 
-	dbCfg := getDatabaseConfiguration()
-	db, err := postgres.New(dbCfg)
+	db, err := InitDatabase()
 	if err != nil {
-		log.Fatal().Err(err).Msg("creating database connection failed")
+		log.Fatal().Err(err).Msg("initializing database")
 	}
+	defer closeDatabase(db)
+
+	addr := net.TCPAddr{
+		IP:   net.ParseIP(viper.GetString(configuration.KeyAddress.Name)),
+		Port: viper.GetInt(configuration.KeyPort.Name),
+		Zone: "",
+	}
+	if err != nil {
+		log.Fatal().Err(err).Msg("creating routing rules")
+	}
+	closeHttpServer := internalHTTP.ListenAndServe(addr, ToServerHandler(db))
 	defer func() {
-		if err := db.Close(); nil != err {
-			log.Error().Err(err).Msg("Could not close database connection")
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := closeHttpServer(ctx); nil != err {
+			log.Fatal().Err(err).Msg("closing server failed")
 		}
 	}()
 
+	<-stopHTTPServer
+}
+
+func ToServerHandler(db *sql.DB) middleware.RequestLogger {
+	sessionManager := scs.New()
+	router := internalHTTP.NewRouter(Route(db, sessionManager))
+	sessionHandler := securitymiddleware.SessionHandler{
+		SessionManager: sessionManager,
+		ErrHandler:     ErrorHandler(),
+		Handler:        router,
+	}
+	handler := middleware.RequestLogger{Handler: sessionHandler}
+	return handler
+}
+
+func closeDatabase(db *sql.DB) {
+	if err := db.Close(); nil != err {
+		log.Error().Err(err).Msg("Could not close database connection")
+	}
+}
+
+func getDatabaseConfiguration() postgres.Configuration {
+	return postgres.Configuration{
+		Address:            viper.GetString(configuration.KeyDatabaseAddress.Name),
+		Port:               viper.GetInt(configuration.KeyDatabasePort.Name),
+		User:               viper.GetString(configuration.KeyDatabaseUser.Name),
+		Password:           viper.GetString(configuration.KeyDatabasePassword.Name),
+		Database:           viper.GetString(configuration.KeyDatabaseName.Name),
+		RequiredExtentions: database.Extentions,
+	}
+}
+
+func InitDatabase() (*sql.DB, error) {
+	dbCfg := getDatabaseConfiguration()
+	db, err := postgres.New(dbCfg)
+	if err != nil {
+		return nil, fmt.Errorf("creating database connection failed: %w", err)
+	}
+
 	manager, err := database.NewVersionManager(db)
 	if err != nil {
-		log.Fatal().Err(err).Msg("instantiate version manager")
+		closeDatabase(db)
+		return db, fmt.Errorf("instantiate version manager: %w", err)
 	}
 	if err = manager.UpgradeAll(); nil != err {
-		log.Fatal().Err(err).Msg("upgrading database")
+		closeDatabase(db)
+		return db, fmt.Errorf("upgrading database: %w", err)
 	}
-
 	if err := database.InsertDummyData(db); nil != err {
-		log.Fatal().Err(err).Msg("inserting dummy data")
+		closeDatabase(db)
+		return db, fmt.Errorf("inserting dummy data: %w", err)
 	}
+	return db, nil
+}
 
+func ErrorHandler() httperror.HTTPErrorHandler {
+	return httperror.HTTPErrorHandler{LogUserError: viper.GetBool(configuration.KeyAPIShowError.Name)}
+}
+
+func NewRequestAuthenticator(userDAO security.UserDAO, sessionManager *scs.SessionManager) securitymiddleware.RequestAuthenticator {
+	authenticator := security.DatabaseAuthentication{DAO: userDAO}
+	updater := securitymiddleware.AuthenticatedUserSessionUpdater{
+		SessionManager: sessionManager,
+	}
+	requestAuthenticator := securitymiddleware.RequestAuthenticator{
+		Authenticator:   authenticator,
+		OnAuthenticated: updater.RenewSessionOnAuthenticatedUser,
+	}
+	return requestAuthenticator
+}
+
+func Route(db *sql.DB, sessionManager *scs.SessionManager) map[string]http.Handler {
 	itemDAO := &database.ItemDAO{DB: db}
 	storageDAO := &database.StorageDAO{DB: db}
 	searchDAO := database.SearchDAO{Searchables: []database.Searcheable{
@@ -124,7 +198,7 @@ func listenRun(_ *cobra.Command, _ []string) {
 	}}
 
 	apiRoutes := make(map[string]http.Handler)
-	errorHandler := httperror.HTTPErrorHandler{viper.GetBool(configuration.KeyAPIShowError.Name)}
+	errorHandler := ErrorHandler()
 	apiRoutes["/storages"] = api.StorageController{
 		StorageDAO: storageDAO,
 		ErrHandler: errorHandler,
@@ -147,46 +221,18 @@ func listenRun(_ *cobra.Command, _ []string) {
 	}
 
 	userDAO := &database.UserDAO{DB: db}
-	authenticator := security.DatabaseAuthentication{DAO: userDAO}
+	requestAuthenticator := NewRequestAuthenticator(userDAO, sessionManager)
 
 	routes := make(map[string]http.Handler)
 	routes["/api"] = securitymiddleware.AuthenticationHandler{
-		ErrorHandler:    errorHandler,
-		Authenticator:   authenticator,
-		OnAuthenticated: nil,
-		Handler:         apiCtrl.Route(),
+		ErrorHandler:         ErrorHandler(),
+		RequestAuthenticator: requestAuthenticator,
+		Handler: apiCtrl.Route(),
 	}
 	routes["/"] = http.FileServer(pkger.Dir("/website/dist"))
-
-	addr := net.TCPAddr{
-		IP:   net.ParseIP(viper.GetString(configuration.KeyAddress.Name)),
-		Port: viper.GetInt(configuration.KeyPort.Name),
-		Zone: "",
-	}
-	if err != nil {
-		log.Fatal().Err(err).Msg("creating routing rules")
-	}
-	router := internalHTTP.NewRouter(routes)
-	handler := middleware.RequestLogger{Handler: router}
-	closeHttpServer := internalHTTP.ListenAndServe(addr, handler)
-	defer func() {
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-		if err := closeHttpServer(ctx); nil != err {
-			log.Fatal().Err(err).Msg("closing server failed")
-		}
-	}()
-
-	<-stopHTTPServer
-}
-
-func getDatabaseConfiguration() postgres.Configuration {
-	return postgres.Configuration{
-		Address:            viper.GetString(configuration.KeyDatabaseAddress.Name),
-		Port:               viper.GetInt(configuration.KeyDatabasePort.Name),
-		User:               viper.GetString(configuration.KeyDatabaseUser.Name),
-		Password:           viper.GetString(configuration.KeyDatabasePassword.Name),
-		Database:           viper.GetString(configuration.KeyDatabaseName.Name),
-		RequiredExtentions: database.Extentions,
-	}
+	routes["/auth"] = api.AuthController{
+		ErrHandler:           errorHandler,
+		RequestAuthenticator: requestAuthenticator,
+	}.Route()
+	return routes
 }

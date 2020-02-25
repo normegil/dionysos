@@ -2,7 +2,7 @@
   <div class="app">
     <Navigation class="app__navigation" />
     <router-view class="app__content" />
-    <LoginModal :show="showLoginModal" @close="closeLoginModal" />
+    <LoginModal />
   </div>
 </template>
 
@@ -16,13 +16,6 @@ import LoginModal from "./components/LoginModal.vue";
   components: { LoginModal, Content, Navigation }
 })
 export default class App extends Vue {
-  get showLoginModal(): boolean {
-    return this.$store.state.auth.showLoginModal;
-  }
-
-  closeLoginModal(): void {
-    this.$store.commit("setShowLoginModal", false);
-  }
 }
 </script>
 
