@@ -23,9 +23,7 @@ type RequestAuthenticator struct {
 
 func (a RequestAuthenticator) Authenticate(r *http.Request) error {
 	username, password, ok := r.BasicAuth()
-	if !ok {
-		r = r.WithContext(context.WithValue(r.Context(), KeyUser, AnonymousUser))
-	} else {
+	if ok {
 		authenticated, err := a.Authenticator.Authenticate(username, password)
 		if err != nil && !security.IsInvalidPassword(err) && !security.IsUserNotExistError(err){
 			return fmt.Errorf("error during authentication: %w", err)

@@ -124,10 +124,11 @@ func listenRun(_ *cobra.Command, _ []string) {
 func ToServerHandler(db *sql.DB) middleware.RequestLogger {
 	sessionManager := scs.New()
 	router := internalHTTP.NewRouter(Route(db, sessionManager))
+	anonymousUserSetter := securitymiddleware.AnonymousUserSetter{Handler: router}
 	sessionHandler := securitymiddleware.SessionHandler{
 		SessionManager: sessionManager,
 		ErrHandler:     ErrorHandler(),
-		Handler:        router,
+		Handler:        anonymousUserSetter,
 	}
 	handler := middleware.RequestLogger{Handler: sessionHandler}
 	return handler
