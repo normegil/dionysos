@@ -165,7 +165,7 @@ export default class InputField extends Vue {
   }
 
   &__password-checkbox-label {
-    background-color: #ffffff;
+    background-color: #fcfcfc;
     padding: 0.6rem 1rem;
 
     &:hover,

@@ -1,8 +1,7 @@
 import { Module } from "vuex";
 import { RootState } from "./model";
 import { Server } from "./http";
-import { AxiosError, AxiosResponse } from "axios";
-import Error from "../model/Error";
+import { AxiosResponse } from "axios";
 
 interface AuthState {
   showLoginModal: boolean;
@@ -24,16 +23,12 @@ export const AUTH: Module<AuthState, RootState> = {
     }
   },
   actions: {
-    signIn: (ctx, login: LoginInformations): void => {
-      Server.get("/auth/sign-in", {
+    signIn: (ctx, login: LoginInformations): Promise<void> => {
+      return Server.get("/auth/sign-in", {
         auth: login
-      })
-        .then((r: AxiosResponse) => {
-          console.log("Login success");
-        })
-        .catch((err: AxiosError<Error>) => {
-          console.error(err);
-        });
+      }).then((r: AxiosResponse) => {
+        console.log("Login success");
+      });
     }
   }
 };

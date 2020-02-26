@@ -42,7 +42,8 @@ export const ENGLISH_TRANSLATION = {
       login: {
         title: "Login",
         username: "User",
-        password: "Password"
+        password: "Password",
+        error: "Invalid user/password"
       }
     },
     components: {

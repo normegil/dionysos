@@ -42,7 +42,8 @@ export const FRENCH_TRANSLATION = {
       login: {
         title: "Se connecter",
         username: "Utilisateur",
-        password: "Mot de passe"
+        password: "Mot de passe",
+        error: "Utilisateur et/ou mot de passe invalide."
       }
     },
     components: {
