@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"github.com/go-chi/chi"
 	httperror "github.com/normegil/dionysos/internal/http/error"
+	middlewaresecurity "github.com/normegil/dionysos/internal/http/middleware/security"
 	"github.com/normegil/dionysos/internal/model"
+	"github.com/normegil/dionysos/internal/security"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -39,8 +41,9 @@ func (c SearchController) search(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	user := r.Context().Value(middlewaresecurity.KeyUser).(security.User)
 	params := dto.ToSearchParameters()
-	results, err := c.DAO.Search(params)
+	results, err := c.DAO.Search(user.Role, params)
 	if err != nil {
 		c.ErrHandler.Handle(w, fmt.Errorf("searching: %w", err))
 		return
@@ -60,7 +63,7 @@ func (c SearchController) search(w http.ResponseWriter, r *http.Request) {
 }
 
 type SearchDAO interface {
-	Search(searchParameters model.SearchParameters) ([]model.SearchResult, error)
+	Search(role security.Role, searchParameters model.SearchParameters) ([]model.SearchResult, error)
 }
 
 type searchDTO struct {

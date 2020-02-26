@@ -10,6 +10,7 @@ type User struct {
 	Name          string
 	PasswordHash  []byte
 	HashAlgorithm HashAlgorithm
+	Role          Role
 }
 
 func NewUser(name, password string) (*User, error) {

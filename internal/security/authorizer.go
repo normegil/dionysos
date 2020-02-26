@@ -3,7 +3,12 @@ package security
 import (
 	"fmt"
 	"github.com/casbin/casbin"
+	"github.com/normegil/dionysos/internal/model"
 )
+
+type Authorizer interface {
+	IsAuthorized(role Role, resource model.Resource, path model.Action) (bool, error)
+}
 
 type CasbinAuthorizer struct {
 	Enforcer *casbin.Enforcer

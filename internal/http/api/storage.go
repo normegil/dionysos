@@ -9,6 +9,7 @@ import (
 	"github.com/normegil/dionysos"
 	internalHTTP "github.com/normegil/dionysos/internal/http"
 	httperror "github.com/normegil/dionysos/internal/http/error"
+	middlewaresecurity "github.com/normegil/dionysos/internal/http/middleware/security"
 	"github.com/normegil/dionysos/internal/model"
 	"io/ioutil"
 	"net/http"
@@ -19,12 +20,13 @@ type StorageController struct {
 	ErrHandler httperror.HTTPErrorHandler
 }
 
-func (c StorageController) Route() http.Handler {
+func (c StorageController) Route(auth middlewaresecurity.AuthorizationHandler) http.Handler {
 	rt := chi.NewRouter()
-	rt.Get("/", c.loadAll)
-	rt.Get("/{storageID}", c.load)
-	rt.Put("/", c.save)
-	rt.Delete("/{storageID}", c.delete)
+	resource := model.ResourceStorage
+	rt.Get("/", auth.Register(resource, model.ActionRead, http.HandlerFunc(c.loadAll)))
+	rt.Get("/{storageID}", auth.Register(resource, model.ActionRead, http.HandlerFunc(c.load)))
+	rt.Put("/", auth.Register(resource, model.ActionWrite, http.HandlerFunc(c.save)))
+	rt.Delete("/{storageID}", auth.Register(resource, model.ActionWrite, http.HandlerFunc(c.delete)))
 	return rt
 }
 

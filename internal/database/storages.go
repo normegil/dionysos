@@ -14,6 +14,10 @@ type StorageDAO struct {
 	DB *sql.DB
 }
 
+func (dao StorageDAO) Resource() model.Resource {
+	return model.ResourceStorage
+}
+
 func (dao *StorageDAO) LoadAll(opts model.CollectionOptions) ([]dionysos.Storage, error) {
 	rows, err := dao.DB.Query(`SELECT * FROM storage WHERE UPPER(storage.name) LIKE UPPER($1) ORDER BY name LIMIT $2 OFFSET $3;`, toDatabaseFilter(opts.Filter), opts.Limit.Number(), opts.Offset.Number())
 	if err != nil {

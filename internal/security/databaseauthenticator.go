@@ -8,22 +8,22 @@ type DatabaseAuthentication struct {
 	DAO UserDAO
 }
 
-func (a DatabaseAuthentication) Authenticate(username string, password string) (bool, error) {
+func (a DatabaseAuthentication) Authenticate(username string, password string) (*User, error) {
 	user, err := a.DAO.Load(username)
 	if err != nil {
 		if a.DAO.IsUserNotExistError(err) {
-			return false, userNotExistError{
+			return nil, userNotExistError{
 				Username: username,
 				Original: err,
 			}
 		}
-		return false, fmt.Errorf("loading user '%s': %w", username, err)
+		return nil, fmt.Errorf("loading user '%s': %w", username, err)
 	}
 	err = user.ValidatePassword(password)
 	if err != nil {
-		return false, fmt.Errorf("validation failed: %w", err)
+		return nil, fmt.Errorf("validation failed: %w", err)
 	}
-	return true, nil
+	return user, nil
 }
 
 type UserDAO interface {

@@ -13,7 +13,7 @@ const KeyUser string = "authenticated-user"
 const AnonymousUser string = "anonymous"
 
 type Authenticator interface {
-	Authenticate(username string, password string) (bool, error)
+	Authenticate(username string, password string) (*security.User, error)
 }
 
 type RequestAuthenticator struct {
@@ -24,12 +24,12 @@ type RequestAuthenticator struct {
 func (a RequestAuthenticator) Authenticate(r *http.Request) error {
 	username, password, ok := r.BasicAuth()
 	if ok {
-		authenticated, err := a.Authenticator.Authenticate(username, password)
-		if err != nil && !security.IsInvalidPassword(err) && !security.IsUserNotExistError(err){
+		user, err := a.Authenticator.Authenticate(username, password)
+		if err != nil && !security.IsInvalidPassword(err) && !security.IsUserNotExistError(err) {
 			return fmt.Errorf("error during authentication: %w", err)
 		}
-		if authenticated {
-			r = r.WithContext(context.WithValue(r.Context(), KeyUser, username))
+		if nil != user {
+			r = r.WithContext(context.WithValue(r.Context(), KeyUser, user))
 			if nil != a.OnAuthenticated {
 				if err := a.OnAuthenticated(r, username); nil != err {
 					return fmt.Errorf("authenticater user event error: %w", err)

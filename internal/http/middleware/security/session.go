@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/alexedwards/scs/v2"
 	httperror "github.com/normegil/dionysos/internal/http/error"
+	"github.com/normegil/dionysos/internal/security"
 	"net/http"
 	"time"
 )
@@ -15,6 +16,7 @@ type SessionHandler struct {
 	SessionManager       *scs.SessionManager
 	RequestAuthenticator RequestAuthenticator
 	ErrHandler           httperror.HTTPErrorHandler
+	UserDAO              security.UserDAO
 	Handler              http.Handler
 }
 
@@ -31,8 +33,13 @@ func (s SessionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user := s.SessionManager.Get(ctx, keySessionUser)
-	if nil != user {
+	username := s.SessionManager.Get(ctx, keySessionUser).(string)
+	if "" != username {
+		user, err := s.UserDAO.Load(username)
+		if err != nil {
+			s.ErrHandler.Handle(w, fmt.Errorf("could not load user '%s': %w", username, err))
+			return
+		}
 		ctx = context.WithValue(ctx, KeyUser, user)
 	}
 

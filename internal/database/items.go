@@ -14,6 +14,10 @@ type ItemDAO struct {
 	DB *sql.DB
 }
 
+func (dao ItemDAO) Resource() model.Resource {
+	return model.ResourceItem
+}
+
 func (dao *ItemDAO) LoadAll(opts model.CollectionOptions) ([]dionysos.Item, error) {
 	rows, err := dao.DB.Query(`SELECT * FROM item WHERE UPPER(item.name) LIKE UPPER($1) ORDER BY name LIMIT $2 OFFSET $3;`, toDatabaseFilter(opts.Filter), opts.Limit.Number(), opts.Offset.Number())
 	if err != nil {
