@@ -18,11 +18,7 @@ func (c AuthController) Route() http.Handler {
 	return rt
 }
 
-func (c AuthController) signIn(w http.ResponseWriter, r *http.Request) {
-	err := c.RequestAuthenticator.Authenticate(r)
-	if err != nil {
-		c.ErrHandler.Handle(w, err)
-		return
-	}
+func (c AuthController) signIn(w http.ResponseWriter, _ *http.Request) {
+	// Authentication handled by middlewares
 	w.WriteHeader(http.StatusOK)
 }

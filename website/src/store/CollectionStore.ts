@@ -19,6 +19,8 @@ interface CollectionResponse<DTO> {
   filter: string;
 }
 
+let iniated = false;
+
 export default class CollectionStore<FinalType, DTO>
   implements Module<Collection<FinalType>, RootState> {
   namespaced = true;

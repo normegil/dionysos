@@ -1,4 +1,4 @@
-import Axios, { AxiosError } from "axios";
+import Axios, { AxiosError, AxiosResponse } from "axios";
 import { STORE } from "./index";
 
 export const Server = Axios.create({
@@ -11,14 +11,15 @@ export const API = Axios.create({
   timeout: 5000
 });
 
-const errorHandler = (error: AxiosError): Promise<AxiosError> => {
-  if (undefined !== error.response) {
-    if (error.response.status === 401) {
-      STORE.commit("auth/setShowLoginModal", true);
-    }
+const errorHandler = async (error: AxiosError): Promise<AxiosResponse> => {
+  if (undefined === error.response) {
+    throw error;
   }
-  // eslint-disable-next-line prefer-promise-reject-errors
-  return Promise.reject({ error });
+  if (error.response.status !== 401) {
+    throw error;
+  }
+  await STORE.dispatch("auth/requireLogin", true);
+  return Server.request(error.config);
 };
 
 API.interceptors.response.use(

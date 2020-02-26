@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/alexedwards/scs/v2"
 	httperror "github.com/normegil/dionysos/internal/http/error"
+	"github.com/rs/zerolog/log"
 	"net/http"
 	"time"
 )
@@ -25,13 +26,15 @@ func (s SessionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		token = cookie.Value
 	}
 
+	log.Info().Str("token", token).Msg("from request")
+
 	ctx, err := s.SessionManager.Load(r.Context(), token)
 	if err != nil {
 		s.ErrHandler.Handle(w, fmt.Errorf("could not load session: %w", err))
 		return
 	}
 
-	user := ctx.Value(keySessionUser)
+	user := s.SessionManager.Get(ctx, keySessionUser)
 	if nil != user {
 		ctx = context.WithValue(ctx, KeyUser, user)
 	}
@@ -51,8 +54,10 @@ func (s SessionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			s.ErrHandler.Handle(w, fmt.Errorf("could not commit session: %w", err))
 			return
 		}
+		log.Info().Str("token", token).Msg("write token")
 		s.writeSession(w, token, expiry)
 	case scs.Destroyed:
+		log.Info().Str("token", token).Msg("destroyed token")
 		s.writeSession(w, "", time.Time{})
 	}
 
