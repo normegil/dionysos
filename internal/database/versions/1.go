@@ -3,11 +3,16 @@ package versions
 import (
 	"database/sql"
 	"fmt"
+	"github.com/brianvoe/gofakeit"
 	"github.com/google/uuid"
+	"github.com/normegil/dionysos"
+	"github.com/normegil/dionysos/internal/configuration"
 	"github.com/normegil/dionysos/internal/database"
 	"github.com/normegil/dionysos/internal/model"
 	"github.com/normegil/dionysos/internal/security"
 	"github.com/normegil/postgres"
+	"github.com/rs/zerolog/log"
+	"github.com/spf13/viper"
 )
 
 type SchemaCreation struct {
@@ -38,6 +43,10 @@ func (v SchemaCreation) insertData() error {
 	dao := database.CasbinDAO{DB: v.DB}
 	if err := dao.InsertMultiple(defaultPolicies()); nil != err {
 		return fmt.Errorf("inserting default rules: %w", err)
+	}
+
+	if err := v.insertDummyData(v.DB); nil != err {
+		return fmt.Errorf("inserting dummy data: %w", err)
 	}
 
 	return nil
@@ -169,5 +178,40 @@ func (v SchemaCreation) Rollback() error {
 		return fmt.Errorf("drop table '%s': %w", itemTableName, err)
 	}
 
+	return nil
+}
+
+func (v SchemaCreation) insertDummyData(db *sql.DB) error {
+	if viper.GetBool(configuration.KeyDummyData.Name) {
+		storageDAO := &database.StorageDAO{DB: db}
+		itemDAO := &database.ItemDAO{DB: db}
+		userDAO := &database.UserDAO{DB: db}
+		if viper.GetBool(configuration.KeyDummyData.Name) {
+			log.Info().Msg("insert dummy data")
+			const dummyItemNb = 50
+
+			user, err := security.NewUser("admin", "admin")
+			if err != nil {
+				return fmt.Errorf("inserting 'admin' user: %w", err)
+			}
+			if err := userDAO.Insert(*user); nil != err {
+				return fmt.Errorf("inserting %s: %w", user.Name, err)
+			}
+
+			for i := 0; i < dummyItemNb; i++ {
+				storage := dionysos.Storage{Name: gofakeit.Company()}
+				if err := storageDAO.Insert(storage); nil != err {
+					return fmt.Errorf("inserting %+v: %w", storage, err)
+				}
+			}
+
+			for i := 0; i < dummyItemNb; i++ {
+				item := dionysos.Item{Name: gofakeit.BeerName()}
+				if err := itemDAO.Insert(item); nil != err {
+					return fmt.Errorf("inserting %+v: %w", item, err)
+				}
+			}
+		}
+	}
 	return nil
 }

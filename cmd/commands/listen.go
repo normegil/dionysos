@@ -112,7 +112,7 @@ func listenRun(_ *cobra.Command, _ []string) {
 	if err != nil {
 		log.Fatal().Err(err).Msg("creating routing rules")
 	}
-	closeHttpServer := internalHTTP.ListenAndServe(addr, ToServerHandler(db))
+	closeHttpServer := internalHTTP.ListenAndServe(addr, toServerHandler(db))
 	defer func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
@@ -124,7 +124,7 @@ func listenRun(_ *cobra.Command, _ []string) {
 	<-stopHTTPServer
 }
 
-func ToServerHandler(db *sql.DB) middleware.RequestLogger {
+func toServerHandler(db *sql.DB) middleware.RequestLogger {
 	sessionManager := scs.New()
 	router := internalHTTP.NewRouter(route(db, sessionManager))
 	sessionHandler := securitymiddleware.SessionHandler{
@@ -133,7 +133,8 @@ func ToServerHandler(db *sql.DB) middleware.RequestLogger {
 		ErrHandler:           errorHandler(),
 		Handler:              router,
 	}
-	handler := middleware.RequestLogger{Handler: sessionHandler}
+	anonymousUserSetter := securitymiddleware.AnonymousUserSetter{Handler: sessionHandler}
+	handler := middleware.RequestLogger{Handler: anonymousUserSetter}
 	return handler
 }
 
@@ -169,10 +170,6 @@ func initDatabase() (*sql.DB, error) {
 	if err = manager.UpgradeAll(); nil != err {
 		closeDatabase(db)
 		return db, fmt.Errorf("upgrading database: %w", err)
-	}
-	if err := database.InsertDummyData(db); nil != err {
-		closeDatabase(db)
-		return db, fmt.Errorf("inserting dummy data: %w", err)
 	}
 	return db, nil
 }
