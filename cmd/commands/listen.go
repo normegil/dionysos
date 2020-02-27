@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/alexedwards/scs/v2"
+	"github.com/casbin/casbin"
 	"github.com/go-chi/chi"
 	"github.com/markbates/pkger"
 	"github.com/normegil/dionysos/internal/configuration"
@@ -15,6 +16,7 @@ import (
 	"github.com/normegil/dionysos/internal/http/middleware"
 	securitymiddleware "github.com/normegil/dionysos/internal/http/middleware/security"
 	"github.com/normegil/dionysos/internal/security"
+	"github.com/normegil/dionysos/internal/security/authorization"
 	"github.com/normegil/postgres"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -95,7 +97,7 @@ func listenRun(_ *cobra.Command, _ []string) {
 	stopHTTPServer := make(chan os.Signal, 1)
 	signal.Notify(stopHTTPServer, os.Interrupt)
 
-	db, err := InitDatabase()
+	db, err := initDatabase()
 	if err != nil {
 		log.Fatal().Err(err).Msg("initializing database")
 	}
@@ -123,11 +125,11 @@ func listenRun(_ *cobra.Command, _ []string) {
 
 func ToServerHandler(db *sql.DB) middleware.RequestLogger {
 	sessionManager := scs.New()
-	router := internalHTTP.NewRouter(Route(db, sessionManager))
+	router := internalHTTP.NewRouter(route(db, sessionManager))
 	sessionHandler := securitymiddleware.SessionHandler{
 		SessionManager:       sessionManager,
-		RequestAuthenticator: NewRequestAuthenticator(database.UserDAO{DB: db}, sessionManager),
-		ErrHandler:           ErrorHandler(),
+		RequestAuthenticator: newRequestAuthenticator(database.UserDAO{DB: db}, sessionManager),
+		ErrHandler:           errorHandler(),
 		Handler:              router,
 	}
 	handler := middleware.RequestLogger{Handler: sessionHandler}
@@ -151,7 +153,7 @@ func getDatabaseConfiguration() postgres.Configuration {
 	}
 }
 
-func InitDatabase() (*sql.DB, error) {
+func initDatabase() (*sql.DB, error) {
 	dbCfg := getDatabaseConfiguration()
 	db, err := postgres.New(dbCfg)
 	if err != nil {
@@ -174,11 +176,11 @@ func InitDatabase() (*sql.DB, error) {
 	return db, nil
 }
 
-func ErrorHandler() httperror.HTTPErrorHandler {
+func errorHandler() httperror.HTTPErrorHandler {
 	return httperror.HTTPErrorHandler{LogUserError: viper.GetBool(configuration.KeyAPIShowError.Name)}
 }
 
-func NewRequestAuthenticator(userDAO security.UserDAO, sessionManager *scs.SessionManager) securitymiddleware.RequestAuthenticator {
+func newRequestAuthenticator(userDAO security.UserDAO, sessionManager *scs.SessionManager) securitymiddleware.RequestAuthenticator {
 	authenticator := security.DatabaseAuthentication{DAO: userDAO}
 	updater := securitymiddleware.AuthenticatedUserSessionUpdater{
 		SessionManager: sessionManager,
@@ -190,24 +192,33 @@ func NewRequestAuthenticator(userDAO security.UserDAO, sessionManager *scs.Sessi
 	return requestAuthenticator
 }
 
-func Route(db *sql.DB, sessionManager *scs.SessionManager) map[string]http.Handler {
+func route(db *sql.DB, sessionManager *scs.SessionManager) map[string]http.Handler {
 	itemDAO := &database.ItemDAO{DB: db}
 	storageDAO := &database.StorageDAO{DB: db}
-	searchDAO := database.SearchDAO{Searchables: []database.Searcheable{
-		itemDAO,
-		storageDAO,
-	}}
 
+	authorizer := newAuthorizer(db)
+	searchDAO := database.SearchDAO{
+		Searchables: []database.Searcheable{
+			itemDAO,
+			storageDAO,
+		},
+		Authorizer: authorizer,
+	}
+
+	errorHandler := errorHandler()
+	authorizationHandler := securitymiddleware.AuthorizationHandler{
+		Authorizer: authorizer,
+		ErrHandler: errorHandler,
+	}
 	apiRoutes := make(map[string]http.Handler)
-	errorHandler := ErrorHandler()
 	apiRoutes["/storages"] = api.StorageController{
 		StorageDAO: storageDAO,
 		ErrHandler: errorHandler,
-	}.Route()
+	}.Route(authorizationHandler)
 	apiRoutes["/items"] = api.ItemController{
 		ItemDAO:    itemDAO,
 		ErrHandler: errorHandler,
-	}.Route()
+	}.Route(authorizationHandler)
 	apiRoutes["/searches"] = api.SearchController{
 		DAO:        searchDAO,
 		ErrHandler: errorHandler,
@@ -228,7 +239,14 @@ func Route(db *sql.DB, sessionManager *scs.SessionManager) map[string]http.Handl
 	routes["/"] = http.FileServer(pkger.Dir("/website/dist"))
 	routes["/auth"] = api.AuthController{
 		ErrHandler:           errorHandler,
-		RequestAuthenticator: NewRequestAuthenticator(userDAO, sessionManager),
+		RequestAuthenticator: newRequestAuthenticator(userDAO, sessionManager),
 	}.Route()
 	return routes
+}
+
+func newAuthorizer(db *sql.DB) authorization.CasbinAuthorizer {
+	adapter := authorization.Adapter{DAO: database.CasbinDAO{DB: db}}
+	enforcer := casbin.NewEnforcer(authorization.Model(), adapter)
+	authorizer := authorization.CasbinAuthorizer{Enforcer: enforcer}
+	return authorizer
 }

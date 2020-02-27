@@ -1,7 +1,10 @@
 package security
 
+import "github.com/google/uuid"
+
 type Role struct {
-	Name string `json:"name"`
+	ID   uuid.UUID `json:"id"`
+	Name string    `json:"name"`
 }
 
-var RoleNone = Role{Name:"none"}
+var RoleNone = Role{Name: "none"}

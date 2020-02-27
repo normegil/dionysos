@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/normegil/dionysos/internal/model"
 	"github.com/normegil/dionysos/internal/security"
+	"github.com/normegil/dionysos/internal/security/authorization"
 )
 
 type Searcheable interface {
@@ -13,7 +14,7 @@ type Searcheable interface {
 
 type SearchDAO struct {
 	Searchables []Searcheable
-	Authorizer  security.Authorizer
+	Authorizer  authorization.Authorizer
 }
 
 func (d SearchDAO) Search(role security.Role, searchParameters model.SearchParameters) ([]model.SearchResult, error) {

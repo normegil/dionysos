@@ -5,11 +5,12 @@ import (
 	httperror "github.com/normegil/dionysos/internal/http/error"
 	"github.com/normegil/dionysos/internal/model"
 	"github.com/normegil/dionysos/internal/security"
+	"github.com/normegil/dionysos/internal/security/authorization"
 	"net/http"
 )
 
 type AuthorizationHandler struct {
-	Authorizer security.Authorizer
+	Authorizer authorization.Authorizer
 	ErrHandler httperror.HTTPErrorHandler
 }
 

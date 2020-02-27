@@ -1,11 +1,11 @@
-package security_test
+package authorization_test
 
 import (
 	"fmt"
 	"github.com/casbin/casbin"
 	"github.com/casbin/casbin/model"
 	fileadapter "github.com/casbin/casbin/persist/file-adapter"
-	"github.com/normegil/dionysos/internal/security"
+	"github.com/normegil/dionysos/internal/security/authorization"
 	"testing"
 )
 
@@ -39,7 +39,7 @@ func TestCasbinAuthorizer_IsAuthorized(t *testing.T) {
 			if err != nil {
 				t.Fatal(fmt.Errorf("error when creating casbin enforcer: %w", err))
 			}
-			authorizer := security.CasbinAuthorizer{
+			authorizer := authorization.CasbinAuthorizer{
 				Enforcer: enforcer,
 			}
 			authorized, err := authorizer.IsAuthorized("testuser", test.HTTPMethod, "/testuser/1")
