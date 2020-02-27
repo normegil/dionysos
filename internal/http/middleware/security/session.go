@@ -33,14 +33,17 @@ func (s SessionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	username := s.SessionManager.Get(ctx, keySessionUser).(string)
-	if "" != username {
-		user, err := s.UserDAO.Load(username)
-		if err != nil {
-			s.ErrHandler.Handle(w, fmt.Errorf("could not load user '%s': %w", username, err))
-			return
+	username := s.SessionManager.Get(ctx, keySessionUser)
+	if nil != username {
+		usernameStr := username.(string)
+		if "" != usernameStr {
+			user, err := s.UserDAO.Load(usernameStr)
+			if err != nil {
+				s.ErrHandler.Handle(w, fmt.Errorf("could not load user '%s': %w", usernameStr, err))
+				return
+			}
+			ctx = context.WithValue(ctx, KeyUser, user)
 		}
-		ctx = context.WithValue(ctx, KeyUser, user)
 	}
 
 	sr := r.WithContext(ctx)

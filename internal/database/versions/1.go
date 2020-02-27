@@ -127,7 +127,7 @@ func (v SchemaCreation) createTables() error {
 			"Table-Existence": fmt.Sprintf(tableExistence, policyTableName),
 			"Table-Create": `CREATE TABLE "policy" (
 				id varchar(300) primary key,
-				ptype varchar(300),
+				type varchar(300),
 				value varchar(300)
 			);`,
 			"Table-Set-Owner": fmt.Sprintf(tableSetOwner, policyTableName),
@@ -144,9 +144,19 @@ func (v SchemaCreation) createTables() error {
 func (v SchemaCreation) Rollback() error {
 	dropTableQuery := "DROP TABLE %s"
 
+	policyTableName := "policy"
+	if _, err := v.DB.Exec(fmt.Sprintf(dropTableQuery, policyTableName)); nil != err {
+		return fmt.Errorf("drop table '%s': %w", policyTableName, err)
+	}
+
 	userTableName := "user"
 	if _, err := v.DB.Exec(fmt.Sprintf(dropTableQuery, userTableName)); nil != err {
 		return fmt.Errorf("drop table '%s': %w", userTableName, err)
+	}
+
+	roleTableName := "role"
+	if _, err := v.DB.Exec(fmt.Sprintf(dropTableQuery, roleTableName)); nil != err {
+		return fmt.Errorf("drop table '%s': %w", roleTableName, err)
 	}
 
 	storageTableName := "storage"

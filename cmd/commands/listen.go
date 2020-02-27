@@ -10,6 +10,7 @@ import (
 	"github.com/markbates/pkger"
 	"github.com/normegil/dionysos/internal/configuration"
 	"github.com/normegil/dionysos/internal/database"
+	"github.com/normegil/dionysos/internal/database/versions"
 	internalHTTP "github.com/normegil/dionysos/internal/http"
 	"github.com/normegil/dionysos/internal/http/api"
 	httperror "github.com/normegil/dionysos/internal/http/error"
@@ -160,7 +161,7 @@ func initDatabase() (*sql.DB, error) {
 		return nil, fmt.Errorf("creating database connection failed: %w", err)
 	}
 
-	manager, err := database.NewVersionManager(db)
+	manager, err := versions.NewSyncer(db)
 	if err != nil {
 		closeDatabase(db)
 		return db, fmt.Errorf("instantiate version manager: %w", err)
@@ -245,7 +246,7 @@ func route(db *sql.DB, sessionManager *scs.SessionManager) map[string]http.Handl
 }
 
 func newAuthorizer(db *sql.DB) authorization.CasbinAuthorizer {
-	adapter := authorization.Adapter{DAO: database.CasbinDAO{DB: db}}
+	adapter := &authorization.Adapter{DAO: database.CasbinDAO{DB: db}}
 	enforcer := casbin.NewEnforcer(authorization.Model(), adapter)
 	authorizer := authorization.CasbinAuthorizer{Enforcer: enforcer}
 	return authorizer

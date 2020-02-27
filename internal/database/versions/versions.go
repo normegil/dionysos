@@ -1,24 +1,24 @@
-package database
+package versions
 
 import (
 	"database/sql"
 	"fmt"
-	"github.com/normegil/dionysos/internal/database/versions"
+	"github.com/normegil/dionysos/internal/database"
 	"github.com/rs/zerolog/log"
 )
 
-type VersionManager struct {
+type Syncer struct {
 	db       *sql.DB
-	versions versions.Versions
+	versions Versions
 }
 
-func NewVersionManager(db *sql.DB) (*VersionManager, error) {
-	v := versions.NewVersions(db)
-	return &VersionManager{db: db, versions: v}, nil
+func NewSyncer(db *sql.DB) (*Syncer, error) {
+	v := NewVersions(db)
+	return &Syncer{db: db, versions: v}, nil
 }
 
-func (m VersionManager) UpgradeAll() error {
-	versionDAO := VersionDAO{DB: m.db}
+func (m Syncer) UpgradeAll() error {
+	versionDAO := database.VersionDAO{DB: m.db}
 	currentVersion, err := versionDAO.CurrentVersion()
 	if err != nil {
 		return err
