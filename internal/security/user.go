@@ -35,3 +35,11 @@ func NewUser(name, password string) (*User, error) {
 func (u User) ValidatePassword(password string) error {
 	return u.HashAlgorithm.Validate(u.PasswordHash, password)
 }
+
+var UserAnonymous = User{
+	ID:            uuid.Nil,
+	Name:          "anonymous",
+	PasswordHash:  []byte(""),
+	HashAlgorithm: HashAlgorithmBcrypt14,
+	Role:          RoleNone,
+}

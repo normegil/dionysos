@@ -10,7 +10,6 @@ import (
 )
 
 const KeyUser string = "authenticated-user"
-const AnonymousUser string = "anonymous"
 
 type Authenticator interface {
 	Authenticate(username string, password string) (*security.User, error)
