@@ -28,6 +28,7 @@ func (a AuthorizationHandler) Register(resource model.Resource, action model.Act
 				Status: http.StatusForbidden,
 				Err:    fmt.Errorf("access forbidden {method:%s;ressource:%s}", r.Method, r.RequestURI),
 			})
+			return
 		}
 		handler.ServeHTTP(w, r)
 	}
