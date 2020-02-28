@@ -95,15 +95,17 @@ export default class UnfoldableMenuItem extends Vue {
     };
   }
 
-  get subItemsContainerPositionStyle(): { bottom: string } {
+  get subItemsContainerPositionStyle(): { top: string } {
     if (this.direction === "down") {
-      return { bottom: "0rem" };
+      return { top: "0rem" };
     }
 
-    const mainItemHeight = 4; // Main item height
+    const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+    const subItemHeight = 3.4 * rem; // Main item height
+    const top = -(subItemHeight * this.subItems.length);
 
     return {
-      bottom: mainItemHeight + "rem"
+      top: top + "px"
     };
   }
 
