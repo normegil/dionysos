@@ -6,14 +6,14 @@ import (
 )
 
 type User struct {
-	ID            uuid.UUID
-	Name          string
-	PasswordHash  []byte
-	HashAlgorithm HashAlgorithm
-	Role          Role
+	ID            uuid.UUID     `json:"id"`
+	Name          string        `json:"name"`
+	PasswordHash  []byte        `json:"-"`
+	HashAlgorithm HashAlgorithm `json:"-"`
+	Role          Role          `json:"role"`
 }
 
-func NewUser(name, password string) (*User, error) {
+func NewUser(name, password string, role Role) (*User, error) {
 	hashAlgorithm := HashAlgorithmBcrypt14
 	hash, err := hashAlgorithm.HashAndSalt(password)
 	if err != nil {
@@ -24,6 +24,7 @@ func NewUser(name, password string) (*User, error) {
 		Name:          name,
 		PasswordHash:  hash,
 		HashAlgorithm: hashAlgorithm,
+		Role:          role,
 	}
 	err = u.ValidatePassword(password)
 	if err != nil {

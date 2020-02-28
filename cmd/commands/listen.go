@@ -131,6 +131,7 @@ func toServerHandler(db *sql.DB) middleware.RequestLogger {
 		SessionManager:       sessionManager,
 		RequestAuthenticator: newRequestAuthenticator(database.UserDAO{DB: db}, sessionManager),
 		ErrHandler:           errorHandler(),
+		UserDAO: database.UserDAO{DB:db},
 		Handler:              router,
 	}
 	anonymousUserSetter := securitymiddleware.AnonymousUserSetter{Handler: sessionHandler}
@@ -229,15 +230,15 @@ func route(db *sql.DB, sessionManager *scs.SessionManager) map[string]http.Handl
 			})
 		},
 	}
-
-	userDAO := &database.UserDAO{DB: db}
+	userCtrl := api.UserController{ErrHandler: errorHandler}
+	apiRoutes["/users"] = userCtrl.Route()
 
 	routes := make(map[string]http.Handler)
 	routes["/api"] = apiCtrl.Route()
 	routes["/"] = http.FileServer(pkger.Dir("/website/dist"))
 	routes["/auth"] = api.AuthController{
-		ErrHandler:           errorHandler,
-		RequestAuthenticator: newRequestAuthenticator(userDAO, sessionManager),
+		ErrHandler:     errorHandler,
+		UserController: userCtrl,
 	}.Route()
 	return routes
 }

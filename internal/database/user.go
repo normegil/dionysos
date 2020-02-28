@@ -14,12 +14,13 @@ type UserDAO struct {
 }
 
 func (d UserDAO) Load(username string) (*security.User, error) {
-	row := d.DB.QueryRow(`SELECT id, name, hash, algorithmID FROM "user" WHERE name=$1`, username)
+	row := d.DB.QueryRow(`SELECT id, name, hash, algorithmID, roleID FROM "user" WHERE name=$1`, username)
 	var id uuid.UUID
 	var name string
 	var hash []byte
 	var algorithmID uuid.UUID
-	if err := row.Scan(&id, &name, &hash, &algorithmID); nil != err {
+	var roleID uuid.UUID
+	if err := row.Scan(&id, &name, &hash, &algorithmID, &roleID); nil != err {
 		if strings.Contains(err.Error(), "no rows in result set") {
 			return nil, userNotExistError{
 				Username: username,
@@ -32,16 +33,22 @@ func (d UserDAO) Load(username string) (*security.User, error) {
 	if nil == algorithm {
 		return nil, fmt.Errorf("loading user '%s': algorithm not found for id '%s'", username, algorithmID)
 	}
+
+	role, err := RoleDAO{DB: d.DB}.LoadByID(roleID)
+	if err != nil {
+		return nil, fmt.Errorf("loading user '%s': %w", username, err)
+	}
 	return &security.User{
 		ID:            id,
 		Name:          name,
 		PasswordHash:  hash,
 		HashAlgorithm: algorithm,
+		Role:          *role,
 	}, nil
 }
 
 func (d UserDAO) Insert(user security.User) error {
-	if _, err := d.DB.Exec(`INSERT INTO "user" (id, name, hash, algorithmID) VALUES (gen_random_uuid(), $1, $2::bytea, $3);`, user.Name, user.PasswordHash, user.HashAlgorithm.ID()); err != nil {
+	if _, err := d.DB.Exec(`INSERT INTO "user" (id, name, hash, algorithmID, roleID) VALUES (gen_random_uuid(), $1, $2::bytea, $3, $4);`, user.Name, user.PasswordHash, user.HashAlgorithm.ID(), user.Role.ID); err != nil {
 		return fmt.Errorf("inserting %s: %w", user.Name, err)
 	}
 	return nil
@@ -55,7 +62,6 @@ type userNotExistError struct {
 func (e userNotExistError) Error() string {
 	return fmt.Errorf("databse user '%s' doesn't exist: %w", e.Username, e.Original).Error()
 }
-
 
 func (d UserDAO) IsUserNotExistError(err error) bool {
 	return errors.As(err, &userNotExistError{})

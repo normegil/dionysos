@@ -30,12 +30,18 @@ func (v SchemaCreation) Apply() error {
 }
 
 func (v SchemaCreation) insertData() error {
+	roleDAO := database.RoleDAO{DB: v.DB}
+
+	rootRole := security.Role{
+		Name: "root",
+	}
+
 	defaultRoles := []security.Role{
-		{Name: "root"},
+		rootRole,
 		{Name: "user"},
 	}
 	for _, role := range defaultRoles {
-		if _, err := v.DB.Exec(`INSERT INTO role (id, name) VALUES (gen_random_uuid(), $1)`, role.Name); nil != err {
+		if err := roleDAO.Insert(role); nil != err {
 			return fmt.Errorf("inserting '%s' role: %w", err)
 		}
 	}
@@ -43,6 +49,20 @@ func (v SchemaCreation) insertData() error {
 	dao := database.CasbinDAO{DB: v.DB}
 	if err := dao.InsertMultiple(defaultPolicies()); nil != err {
 		return fmt.Errorf("inserting default rules: %w", err)
+	}
+
+	loadedRootRole, err := roleDAO.LoadByName(rootRole.Name)
+	if err != nil {
+		return fmt.Errorf("could not find role '%s': %w", rootRole.Name, err)
+	}
+
+	userDAO := database.UserDAO{DB: v.DB}
+	user, err := security.NewUser("root", "root", *loadedRootRole)
+	if err != nil {
+		return fmt.Errorf("creating 'admin' user: %w", err)
+	}
+	if err := userDAO.Insert(*user); nil != err {
+		return fmt.Errorf("inserting '%s' user: %w", user.Name, err)
 	}
 
 	if err := v.insertDummyData(v.DB); nil != err {
@@ -103,7 +123,7 @@ func (v SchemaCreation) createTables() error {
 	err = postgres.CreateTable(v.DB, postgres.TableInfos{
 		Queries: map[string]string{
 			"Table-Existence": fmt.Sprintf(tableExistence, roleTableName),
-			"Table-Create":    `CREATE TABLE role ( id uuid primary key, name varchar(300));`,
+			"Table-Create":    `CREATE TABLE role ( id uuid primary key, name varchar(300) unique);`,
 			"Table-Set-Owner": fmt.Sprintf(tableSetOwner, roleTableName),
 		},
 		Owner: owner,
@@ -186,30 +206,35 @@ func (v SchemaCreation) insertDummyData(db *sql.DB) error {
 		storageDAO := &database.StorageDAO{DB: db}
 		itemDAO := &database.ItemDAO{DB: db}
 		userDAO := &database.UserDAO{DB: db}
-		if viper.GetBool(configuration.KeyDummyData.Name) {
-			log.Info().Msg("insert dummy data")
-			const dummyItemNb = 50
 
-			user, err := security.NewUser("admin", "admin")
-			if err != nil {
-				return fmt.Errorf("inserting 'admin' user: %w", err)
-			}
-			if err := userDAO.Insert(*user); nil != err {
-				return fmt.Errorf("inserting %s: %w", user.Name, err)
-			}
+		log.Info().Msg("insert dummy data")
+		const dummyItemNb = 50
 
-			for i := 0; i < dummyItemNb; i++ {
-				storage := dionysos.Storage{Name: gofakeit.Company()}
-				if err := storageDAO.Insert(storage); nil != err {
-					return fmt.Errorf("inserting %+v: %w", storage, err)
-				}
-			}
+		rolename := "user"
+		userrole, err := database.RoleDAO{DB: v.DB}.LoadByName(rolename)
+		if err != nil {
+			return fmt.Errorf("load '%s' role: %w", rolename, err)
+		}
 
-			for i := 0; i < dummyItemNb; i++ {
-				item := dionysos.Item{Name: gofakeit.BeerName()}
-				if err := itemDAO.Insert(item); nil != err {
-					return fmt.Errorf("inserting %+v: %w", item, err)
-				}
+		user, err := security.NewUser("user", "user", *userrole)
+		if err != nil {
+			return fmt.Errorf("creating 'user' user: %w", err)
+		}
+		if err := userDAO.Insert(*user); nil != err {
+			return fmt.Errorf("inserting %s: %w", user.Name, err)
+		}
+
+		for i := 0; i < dummyItemNb; i++ {
+			storage := dionysos.Storage{Name: gofakeit.Company()}
+			if err := storageDAO.Insert(storage); nil != err {
+				return fmt.Errorf("inserting %+v: %w", storage, err)
+			}
+		}
+
+		for i := 0; i < dummyItemNb; i++ {
+			item := dionysos.Item{Name: gofakeit.BeerName()}
+			if err := itemDAO.Insert(item); nil != err {
+				return fmt.Errorf("inserting %+v: %w", item, err)
 			}
 		}
 	}

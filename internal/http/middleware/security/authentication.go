@@ -1,7 +1,6 @@
 package security
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	httperror "github.com/normegil/dionysos/internal/http/error"
@@ -28,7 +27,6 @@ func (a RequestAuthenticator) Authenticate(r *http.Request) error {
 			return fmt.Errorf("error during authentication: %w", err)
 		}
 		if nil != user {
-			r = r.WithContext(context.WithValue(r.Context(), KeyUser, user))
 			if nil != a.OnAuthenticated {
 				if err := a.OnAuthenticated(r, username); nil != err {
 					return fmt.Errorf("authenticater user event error: %w", err)

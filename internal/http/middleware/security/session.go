@@ -32,6 +32,12 @@ func (s SessionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		s.ErrHandler.Handle(w, fmt.Errorf("could not load session: %w", err))
 		return
 	}
+	r = r.WithContext(ctx)
+
+	if err := s.RequestAuthenticator.Authenticate(r); nil != err {
+		s.ErrHandler.Handle(w, err)
+		return
+	}
 
 	username := s.SessionManager.Get(ctx, keySessionUser)
 	if nil != username {
@@ -42,15 +48,10 @@ func (s SessionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				s.ErrHandler.Handle(w, fmt.Errorf("could not load user '%s': %w", usernameStr, err))
 				return
 			}
-			ctx = context.WithValue(ctx, KeyUser, user)
+			ctx = context.WithValue(ctx, KeyUser, *user)
 		}
 	}
-
 	sr := r.WithContext(ctx)
-	if err := s.RequestAuthenticator.Authenticate(sr); nil != err {
-		s.ErrHandler.Handle(w, err)
-		return
-	}
 
 	switch s.SessionManager.Status(ctx) {
 	case scs.Unmodified:
