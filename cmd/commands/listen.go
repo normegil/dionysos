@@ -222,6 +222,8 @@ func route(db *sql.DB, sessionManager *scs.SessionManager) map[string]http.Handl
 		DAO:        searchDAO,
 		ErrHandler: errorHandler,
 	}.Route()
+	userCtrl := api.UserController{ErrHandler: errorHandler}
+	apiRoutes["/users"] = userCtrl.Route()
 	apiCtrl := internalHTTP.MultiController{
 		Routes: apiRoutes,
 		OnRegister: func(rt *chi.Mux) {
@@ -230,8 +232,6 @@ func route(db *sql.DB, sessionManager *scs.SessionManager) map[string]http.Handl
 			})
 		},
 	}
-	userCtrl := api.UserController{ErrHandler: errorHandler}
-	apiRoutes["/users"] = userCtrl.Route()
 
 	routes := make(map[string]http.Handler)
 	routes["/api"] = apiCtrl.Route()

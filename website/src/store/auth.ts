@@ -1,13 +1,12 @@
 import { Module } from "vuex";
 import { RootState } from "./model";
-import { Server } from "./http";
-import { AxiosRequestConfig, AxiosResponse } from "axios";
+import { API, Server } from "./http";
+import { AxiosResponse } from "axios";
 import sleep from "../tools/sleep";
 import User from "../model/User";
 
 interface AuthState {
   showLoginModal: boolean;
-  currentContext: AxiosRequestConfig | undefined;
   authentifiedUser: User | undefined;
 }
 
@@ -20,7 +19,6 @@ export const AUTH: Module<AuthState, RootState> = {
   namespaced: true,
   state: {
     showLoginModal: false,
-    currentContext: undefined,
     authentifiedUser: undefined
   },
   getters: {
@@ -47,6 +45,10 @@ export const AUTH: Module<AuthState, RootState> = {
     }
   },
   actions: {
+    loadAuthentication: async (ctx): Promise<void> => {
+      const response: AxiosResponse<User> = await API.get("/users/current");
+      ctx.commit("setAuthentified", response.data);
+    },
     signIn: async (ctx, login: LoginInformations): Promise<void> => {
       const response: AxiosResponse<User> = await Server.get("/auth/sign-in", {
         auth: login
@@ -54,6 +56,14 @@ export const AUTH: Module<AuthState, RootState> = {
       console.log("Sign in as: " + response.data.name);
       ctx.commit("setAuthentified", response.data);
       ctx.commit("setShowLoginModal", false);
+    },
+    signOut: async (ctx): Promise<void> => {
+      await Server.get("/auth/sign-out", {
+        headers: {
+          "X-Authentication-Action": "sign-out"
+        }
+      });
+      ctx.commit("setAuthentified", undefined);
     },
     requireLogin: async (ctx): Promise<boolean> => {
       ctx.commit("setShowLoginModal", true);

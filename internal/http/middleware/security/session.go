@@ -34,6 +34,11 @@ func (s SessionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	r = r.WithContext(ctx)
 
+	if err := s.handleAuthenticationAction(r); nil != err {
+		s.ErrHandler.Handle(w, err)
+		return
+	}
+
 	if err := s.RequestAuthenticator.Authenticate(r); nil != err {
 		s.ErrHandler.Handle(w, err)
 		return
@@ -42,7 +47,7 @@ func (s SessionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	username := s.SessionManager.Get(ctx, keySessionUser)
 	if nil != username {
 		usernameStr := username.(string)
-		if "" != usernameStr {
+		if "" != usernameStr && security.UserAnonymous.Name != usernameStr{
 			user, err := s.UserDAO.Load(usernameStr)
 			if err != nil {
 				s.ErrHandler.Handle(w, fmt.Errorf("could not load user '%s': %w", usernameStr, err))
@@ -68,6 +73,23 @@ func (s SessionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	s.Handler.ServeHTTP(w, sr)
+}
+
+func (s SessionHandler) handleAuthenticationAction(r *http.Request) error {
+	authenticationAction := r.Header.Get("X-Authentication-Action")
+	if authenticationAction != "" {
+		userSessionUpdater := AuthenticatedUserSessionUpdater{SessionManager: s.SessionManager}
+		switch authenticationAction {
+		case "sign-out":
+			err := userSessionUpdater.SignOut(r)
+			if err != nil {
+				return fmt.Errorf("couldn't sign out: %w", err)
+			}
+		default:
+			return fmt.Errorf("unrecognized authentication action: '%s'", authenticationAction)
+		}
+	}
+	return nil
 }
 
 func (s SessionHandler) writeSession(w http.ResponseWriter, token string, expiry time.Time) {
@@ -112,5 +134,13 @@ func (a AuthenticatedUserSessionUpdater) RenewSessionOnAuthenticatedUser(r *http
 		return fmt.Errorf("could not renew session token: %w", err)
 	}
 	a.SessionManager.Put(r.Context(), keySessionUser, username)
+	return nil
+}
+
+func (a AuthenticatedUserSessionUpdater) SignOut(r *http.Request) error {
+	if err := a.SessionManager.RenewToken(r.Context()); nil != err {
+		return fmt.Errorf("could not renew session token: %w", err)
+	}
+	a.SessionManager.Put(r.Context(), keySessionUser, security.UserAnonymous.Name)
 	return nil
 }

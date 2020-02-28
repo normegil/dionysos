@@ -123,6 +123,7 @@ export default class UnfoldableMenuItem extends Vue {
     color: $color-grey-dark;
     text-decoration: none;
     position: relative;
+    cursor: pointer;
     transition: all 0.3s;
 
     &:hover {

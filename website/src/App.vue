@@ -16,6 +16,9 @@ import LoginModal from "./components/LoginModal.vue";
   components: { LoginModal, Content, Navigation }
 })
 export default class App extends Vue {
+  mounted(): void {
+    this.$store.dispatch("auth/loadAuthentication");
+  }
 }
 </script>
 

@@ -10,6 +10,7 @@
         :sub-items="moreMenuItems"
         direction="up"
       />
+      <UserDisplay class="item-border-top" />
     </div>
   </div>
 </template>
@@ -20,9 +21,10 @@ import Component from "vue-class-component";
 import MainMenuItem from "./MainMenuItem.vue";
 import LinkWithIcon from "../../model/LinkWithIcon";
 import UnfoldableMenuItem from "../../components/UnfoldableMenuItem.vue";
+import UserDisplay from "./UserDisplay.vue";
 
 @Component({
-  components: { MainMenuItem, UnfoldableMenuItem }
+  components: { UserDisplay, MainMenuItem, UnfoldableMenuItem }
 })
 export default class MainMenu extends Vue {
   get links(): LinkWithIcon[] {

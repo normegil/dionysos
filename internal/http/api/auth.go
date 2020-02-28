@@ -14,5 +14,10 @@ type AuthController struct {
 func (c AuthController) Route() http.Handler {
 	rt := chi.NewRouter()
 	rt.Get("/sign-in", c.UserController.current)
+	rt.Get("/sign-out", c.signOut)
 	return rt
+}
+
+func (c AuthController) signOut(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
 }
