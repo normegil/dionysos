@@ -12,5 +12,6 @@ function convert(dto: StorageDTO): Item {
 
 export const STORAGES = new CollectionStore<Item, StorageDTO>(
   "storages",
+  "storage",
   convert
 );

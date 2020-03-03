@@ -12,17 +12,20 @@
         :placeholder="filterPlaceholder"
         :searched="filter"
         @search="filterCollection"
+        v-if="$store.getters.auth.hasAccess(resource, 'read')"
       />
       <Button
         icon="las la-plus"
         :title="$t('ui.button.add')"
         @click="$emit('create-item')"
+        v-if="$store.getters.auth.hasAccess(resource, 'write')"
       />
     </div>
     <div class="collection__container-box">
       <Table
         :headings="tableHeaders"
         :content="items"
+        :readonly="$store.getters.auth.hasAccess(resource, 'write')"
         @edit="editItem"
         @remove="removeItem"
       />
@@ -60,6 +63,10 @@ export default class CollectionManager extends Vue {
 
   get items(): Rowable[] {
     return this.$store.state[this.storeNamespace].items;
+  }
+
+  get resource(): string {
+    return this.$store.getters[this.storeNamespace + "/resourceName"];
   }
 
   get filter(): string {

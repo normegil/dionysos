@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="$store.getters.auth.hasAccess(link.resource, 'read')">
     <router-link v-if="!isLink" :to="link.href" class="main-menu-item">
       <i :class="link.icon" class="main-menu-item__icon" />
       <span class="main-menu-item__text"> {{ link.title }}</span>
@@ -15,12 +15,12 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import { Prop } from "vue-property-decorator";
-import LinkWithIcon from "../../model/LinkWithIcon";
+import MainLink from "../../model/MainLink";
 
 @Component
 export default class MainMenuItem extends Vue {
   @Prop({ default: {}, required: true })
-  link!: LinkWithIcon;
+  link!: MainLink;
 
   @Prop({ default: false, required: false })
   isLink!: boolean;

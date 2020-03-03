@@ -10,4 +10,8 @@ function convert(dto: ItemDTO): Item {
   return new Item(dto.id, dto.name);
 }
 
-export const ITEMS = new CollectionStore<Item, ItemDTO>("items", convert);
+export const ITEMS = new CollectionStore<Item, ItemDTO>(
+  "items",
+  "item",
+  convert
+);

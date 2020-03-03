@@ -22,22 +22,25 @@ import MainMenuItem from "./MainMenuItem.vue";
 import LinkWithIcon from "../../model/LinkWithIcon";
 import UnfoldableMenuItem from "../../components/UnfoldableMenuItem.vue";
 import UserDisplay from "./UserDisplay.vue";
+import MainLink from "../../model/MainLink";
 
 @Component({
   components: { UserDisplay, MainMenuItem, UnfoldableMenuItem }
 })
 export default class MainMenu extends Vue {
-  get links(): LinkWithIcon[] {
+  get links(): MainLink[] {
     return [
       {
         title: this.$t("ui.menu.main.storages") as string,
         href: "/storages",
-        icon: "las la-warehouse"
+        icon: "las la-warehouse",
+        resource: "storage"
       },
       {
         title: this.$t("ui.menu.main.items") as string,
         href: "/items",
-        icon: "las la-boxes"
+        icon: "las la-boxes",
+        resource: "storage"
       }
     ];
   }

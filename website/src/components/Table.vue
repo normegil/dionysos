@@ -22,8 +22,16 @@
         {{ cell }}
       </td>
       <td class="table__cell table__cell-action">
-        <Button icon="las la-pen" @click="edit(row.identifier())" />
-        <Button icon="las la-trash" @click="remove(row.identifier())" />
+        <Button
+          v-if="!readonly"
+          icon="las la-pen"
+          @click="edit(row.identifier())"
+        />
+        <Button
+          v-if="!readonly"
+          icon="las la-trash"
+          @click="remove(row.identifier())"
+        />
       </td>
     </tr>
   </table>
@@ -45,6 +53,9 @@ export default class Table extends Vue {
 
   @Prop({ default: [], required: true })
   content!: Rowable[];
+
+  @Prop({ default: false, required: false })
+  readonly!: boolean;
 
   edit(id: string): void {
     this.$emit("edit", id);

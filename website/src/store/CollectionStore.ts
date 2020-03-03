@@ -19,8 +19,6 @@ interface CollectionResponse<DTO> {
   filter: string;
 }
 
-let iniated = false;
-
 export default class CollectionStore<FinalType, DTO>
   implements Module<Collection<FinalType>, RootState> {
   namespaced = true;
@@ -32,13 +30,25 @@ export default class CollectionStore<FinalType, DTO>
     filter: ""
   };
 
+  resourceName: string;
   webServicePrefix: string;
   convert: (dto: DTO) => FinalType;
 
-  constructor(webServicePrefix: string, convert: (dto: DTO) => FinalType) {
+  constructor(
+    webServicePrefix: string,
+    resourceName: string,
+    convert: (dto: DTO) => FinalType
+  ) {
     this.webServicePrefix = webServicePrefix;
+    this.resourceName = resourceName;
     this.convert = convert;
   }
+
+  getters = {
+    resourceName: (state: Collection<FinalType>): string => {
+      return this.resourceName;
+    }
+  };
 
   mutations = {
     setItems: (state: Collection<FinalType>, items: FinalType[]): void => {
