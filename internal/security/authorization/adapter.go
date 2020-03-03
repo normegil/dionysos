@@ -6,7 +6,7 @@ import (
 	casbinmodel "github.com/casbin/casbin/model"
 	"github.com/casbin/casbin/persist"
 	"github.com/google/uuid"
-	"github.com/normegil/dionysos/internal/model"
+	"github.com/normegil/dionysos/internal/security"
 	"strings"
 )
 
@@ -31,12 +31,12 @@ func (a *Adapter) SavePolicy(m casbinmodel.Model) error {
 		return fmt.Errorf("delete all rules: %w", err)
 	}
 
-	rules := make([]model.CasbinRule, 0)
+	rules := make([]security.CasbinRule, 0)
 	for _, assertionMap := range m {
 		for ptype, assertion := range assertionMap {
 			for _, ruleParts := range assertion.Policy {
 				value := strings.Join(ruleParts, ", ")
-				rules = append(rules, model.CasbinRule{
+				rules = append(rules, security.CasbinRule{
 					ID:    uuid.Nil,
 					Type:  ptype,
 					Value: value,
@@ -52,7 +52,7 @@ func (a *Adapter) SavePolicy(m casbinmodel.Model) error {
 }
 
 func (a *Adapter) AddPolicy(sec string, ptype string, rule []string) error {
-	casbinRule := model.CasbinRule{
+	casbinRule := security.CasbinRule{
 		ID:    uuid.Nil,
 		Type:  ptype,
 		Value: strings.Join(rule, ", "),
@@ -72,8 +72,8 @@ func (a *Adapter) RemoveFilteredPolicy(sec string, ptype string, fieldIndex int,
 }
 
 type PolicyDAO interface {
-	LoadAll() ([]model.CasbinRule, error)
-	InsertMultiple([]model.CasbinRule) error
-	Insert(model.CasbinRule) error
+	LoadAll() ([]security.CasbinRule, error)
+	InsertMultiple([]security.CasbinRule) error
+	Insert(security.CasbinRule) error
 	DeleteAll() error
 }

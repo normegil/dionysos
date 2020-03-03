@@ -8,7 +8,6 @@ import (
 	"github.com/normegil/dionysos"
 	"github.com/normegil/dionysos/internal/configuration"
 	"github.com/normegil/dionysos/internal/database"
-	"github.com/normegil/dionysos/internal/model"
 	"github.com/normegil/dionysos/internal/security"
 	"github.com/normegil/postgres"
 	"github.com/rs/zerolog/log"
@@ -72,14 +71,14 @@ func (v SchemaCreation) insertData() error {
 	return nil
 }
 
-func defaultPolicies() []model.CasbinRule {
-	rules := make([]model.CasbinRule, 0)
-	rules = append(rules, model.CasbinRule{ID: uuid.Nil, Type: "p", Value: "user, item, read"})
-	rules = append(rules, model.CasbinRule{ID: uuid.Nil, Type: "p", Value: "user, item, write"})
-	rules = append(rules, model.CasbinRule{ID: uuid.Nil, Type: "p", Value: "user, storage, read"})
-	rules = append(rules, model.CasbinRule{ID: uuid.Nil, Type: "p", Value: "user, storage, write"})
-	rules = append(rules, model.CasbinRule{ID: uuid.Nil, Type: "p", Value: "none, item, read"})
-	rules = append(rules, model.CasbinRule{ID: uuid.Nil, Type: "p", Value: "none, storage, read"})
+func defaultPolicies() []security.CasbinRule {
+	rules := make([]security.CasbinRule, 0)
+	rules = append(rules, security.CasbinRule{ID: uuid.Nil, Type: "p", Value: "user, item, read"})
+	rules = append(rules, security.CasbinRule{ID: uuid.Nil, Type: "p", Value: "user, item, write"})
+	rules = append(rules, security.CasbinRule{ID: uuid.Nil, Type: "p", Value: "user, storage, read"})
+	rules = append(rules, security.CasbinRule{ID: uuid.Nil, Type: "p", Value: "user, storage, write"})
+	rules = append(rules, security.CasbinRule{ID: uuid.Nil, Type: "p", Value: "none, item, read"})
+	rules = append(rules, security.CasbinRule{ID: uuid.Nil, Type: "p", Value: "none, storage, read"})
 	return rules
 }
 

@@ -126,12 +126,12 @@ func listenRun(_ *cobra.Command, _ []string) {
 
 func toServerHandler(db *sql.DB) middleware.RequestLogger {
 	sessionManager := scs.New()
-	router := internalHTTP.NewRouter(route(db, sessionManager))
+	router := internalHTTP.NewRouter(route(db))
 	sessionHandler := securitymiddleware.SessionHandler{
 		SessionManager:       sessionManager,
 		RequestAuthenticator: newRequestAuthenticator(database.UserDAO{DB: db}, sessionManager),
 		ErrHandler:           errorHandler(),
-		UserDAO: database.UserDAO{DB:db},
+		UserDAO:              database.UserDAO{DB: db},
 		Handler:              router,
 	}
 	anonymousUserSetter := securitymiddleware.AnonymousUserSetter{Handler: sessionHandler}
@@ -191,7 +191,7 @@ func newRequestAuthenticator(userDAO security.UserDAO, sessionManager *scs.Sessi
 	return requestAuthenticator
 }
 
-func route(db *sql.DB, sessionManager *scs.SessionManager) map[string]http.Handler {
+func route(db *sql.DB) map[string]http.Handler {
 	itemDAO := &database.ItemDAO{DB: db}
 	storageDAO := &database.StorageDAO{DB: db}
 
@@ -224,6 +224,11 @@ func route(db *sql.DB, sessionManager *scs.SessionManager) map[string]http.Handl
 	}.Route()
 	userCtrl := api.UserController{ErrHandler: errorHandler}
 	apiRoutes["/users"] = userCtrl.Route()
+	rightsCtrl := api.RightsController{
+		DAO:        database.CasbinDAO{DB: db},
+		ErrHandler: errorHandler,
+	}
+	apiRoutes["/rights"] = rightsCtrl.Route()
 	apiCtrl := internalHTTP.MultiController{
 		Routes: apiRoutes,
 		OnRegister: func(rt *chi.Mux) {

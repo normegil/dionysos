@@ -42,5 +42,5 @@ var UserAnonymous = User{
 	Name:          "anonymous",
 	PasswordHash:  []byte(""),
 	HashAlgorithm: HashAlgorithmBcrypt14,
-	Role:          RoleNone,
+	Role:          RoleNil,
 }
