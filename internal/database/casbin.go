@@ -10,7 +10,7 @@ import (
 
 type CasbinDAO struct {
 	DB      *sql.DB
-	RoleDAO RoleDAO
+	RoleDAO security.RoleDAO
 }
 
 func (d CasbinDAO) LoadAll() ([]security.CasbinRule, error) {

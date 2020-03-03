@@ -194,8 +194,12 @@ func newRequestAuthenticator(userDAO security.UserDAO, sessionManager *scs.Sessi
 func route(db *sql.DB) map[string]http.Handler {
 	itemDAO := &database.ItemDAO{DB: db}
 	storageDAO := &database.StorageDAO{DB: db}
+	casbinDAO := &database.CasbinDAO{
+		DB:      db,
+		RoleDAO: &security.NilRoleDAO{RoleDAO: &database.RoleDAO{DB: db}},
+	}
 
-	authorizer := newAuthorizer(db)
+	authorizer := newAuthorizer(casbinDAO)
 	searchDAO := database.SearchDAO{
 		Searchables: []database.Searcheable{
 			itemDAO,
@@ -225,7 +229,7 @@ func route(db *sql.DB) map[string]http.Handler {
 	userCtrl := api.UserController{ErrHandler: errorHandler}
 	apiRoutes["/users"] = userCtrl.Route()
 	rightsCtrl := api.RightsController{
-		DAO:        database.CasbinDAO{DB: db},
+		DAO:        casbinDAO,
 		ErrHandler: errorHandler,
 	}
 	apiRoutes["/rights"] = rightsCtrl.Route()
@@ -248,8 +252,8 @@ func route(db *sql.DB) map[string]http.Handler {
 	return routes
 }
 
-func newAuthorizer(db *sql.DB) authorization.CasbinAuthorizer {
-	adapter := &authorization.Adapter{DAO: database.CasbinDAO{DB: db}}
+func newAuthorizer(dao *database.CasbinDAO) authorization.CasbinAuthorizer {
+	adapter := &authorization.Adapter{DAO: dao}
 	enforcer := casbin.NewEnforcer(authorization.Model(), adapter)
 	authorizer := authorization.CasbinAuthorizer{Enforcer: enforcer}
 	return authorizer

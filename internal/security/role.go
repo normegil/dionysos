@@ -15,3 +15,14 @@ var RoleNil = Role{
 type RoleDAO interface {
 	LoadByName(string) (*Role, error)
 }
+
+type NilRoleDAO struct {
+	RoleDAO RoleDAO
+}
+
+func (d NilRoleDAO) LoadByName(name string) (*Role, error) {
+	if RoleNil.Name == name {
+		return &RoleNil, nil
+	}
+	return d.RoleDAO.LoadByName(name)
+}
