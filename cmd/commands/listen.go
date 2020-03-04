@@ -22,6 +22,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"io"
 	"net"
 	"net/http"
 	"os"
@@ -29,6 +30,7 @@ import (
 	"time"
 )
 
+//nolint:funlen // Main function is quite long but highly repetitive with subtle differences. Limiting function by size isn't required as the coplexity is still low.
 func listen() (*cobra.Command, error) {
 	listenCmd := &cobra.Command{
 		Use:   "listen",
@@ -102,7 +104,7 @@ func listenRun(_ *cobra.Command, _ []string) {
 	if err != nil {
 		log.Fatal().Err(err).Msg("initializing database")
 	}
-	defer closeDatabase(db)
+	defer close(db)
 
 	addr := net.TCPAddr{
 		IP:   net.ParseIP(viper.GetString(configuration.KeyAddress.Name)),
@@ -139,9 +141,9 @@ func toServerHandler(db *sql.DB) middleware.RequestLogger {
 	return handler
 }
 
-func closeDatabase(db *sql.DB) {
-	if err := db.Close(); nil != err {
-		log.Error().Err(err).Msg("Could not close database connection")
+func close(closer io.Closer) {
+	if err := closer.Close(); nil != err {
+		log.Error().Err(err).Msg("Could not close resource")
 	}
 }
 
@@ -152,7 +154,7 @@ func getDatabaseConfiguration() postgres.Configuration {
 		User:               viper.GetString(configuration.KeyDatabaseUser.Name),
 		Password:           viper.GetString(configuration.KeyDatabasePassword.Name),
 		Database:           viper.GetString(configuration.KeyDatabaseName.Name),
-		RequiredExtentions: database.Extentions,
+		RequiredExtentions: database.Extentions(),
 	}
 }
 
@@ -165,11 +167,11 @@ func initDatabase() (*sql.DB, error) {
 
 	manager, err := versions.NewSyncer(db)
 	if err != nil {
-		closeDatabase(db)
+		close(db)
 		return db, fmt.Errorf("instantiate version manager: %w", err)
 	}
 	if err = manager.UpgradeAll(); nil != err {
-		closeDatabase(db)
+		close(db)
 		return db, fmt.Errorf("upgrading database: %w", err)
 	}
 	return db, nil
@@ -252,7 +254,7 @@ func route(db *sql.DB) map[string]http.Handler {
 	return routes
 }
 
-func newAuthorizer(dao *database.CasbinDAO) authorization.CasbinAuthorizer {
+func newAuthorizer(dao authorization.PolicyDAO) authorization.CasbinAuthorizer {
 	adapter := &authorization.Adapter{DAO: dao}
 	enforcer := casbin.NewEnforcer(authorization.Model(), adapter)
 	authorizer := authorization.CasbinAuthorizer{Enforcer: enforcer}

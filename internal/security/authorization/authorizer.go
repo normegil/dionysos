@@ -17,8 +17,8 @@ type CasbinAuthorizer struct {
 
 func (c CasbinAuthorizer) IsAuthorized(role security.Role, resource model.Resource, action model.Action) (bool, error) {
 	roleName := role.Name
-	if security.RoleNil == role {
-		roleName = security.RoleNilPolicyReference
+	if security.RoleNil() == role {
+		roleName = security.RoleNilPolicyReference()
 	}
 	authorized, err := c.Enforcer.EnforceSafe(roleName, string(resource), string(action))
 	if err != nil {

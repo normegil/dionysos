@@ -31,9 +31,9 @@ func (b Bcrypt) Validate(hash []byte, password string) error {
 	return nil
 }
 
-var (
-	HashAlgorithmBcrypt14 = Bcrypt{
+func HashAlgorithmBcrypt14() Bcrypt {
+	return Bcrypt{
 		Identifier: uuid.MustParse("01d1de6c-fa67-4caa-84da-684dc5640626"),
 		Cost:       14,
 	}
-)
+}

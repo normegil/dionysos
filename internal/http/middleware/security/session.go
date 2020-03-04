@@ -47,7 +47,7 @@ func (s SessionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	username := s.SessionManager.Get(ctx, keySessionUser)
 	if nil != username {
 		usernameStr := username.(string)
-		if "" != usernameStr && security.UserAnonymous.Name != usernameStr{
+		if "" != usernameStr && security.UserAnonymous().Name != usernameStr {
 			user, err := s.UserDAO.Load(usernameStr)
 			if err != nil {
 				s.ErrHandler.Handle(w, fmt.Errorf("could not load user '%s': %w", usernameStr, err))
@@ -141,6 +141,6 @@ func (a AuthenticatedUserSessionUpdater) SignOut(r *http.Request) error {
 	if err := a.SessionManager.RenewToken(r.Context()); nil != err {
 		return fmt.Errorf("could not renew session token: %w", err)
 	}
-	a.SessionManager.Put(r.Context(), keySessionUser, security.UserAnonymous.Name)
+	a.SessionManager.Put(r.Context(), keySessionUser, security.UserAnonymous().Name)
 	return nil
 }

@@ -7,9 +7,14 @@ type Role struct {
 	Name string    `json:"name"`
 }
 
-var RoleNil Role
+func RoleNil() Role {
+	var role Role
+	return role
+}
 
-var RoleNilPolicyReference = "none"
+func RoleNilPolicyReference() string {
+	return "none"
+}
 
 type RoleDAO interface {
 	LoadByName(string) (*Role, error)
@@ -20,8 +25,9 @@ type NilRoleDAO struct {
 }
 
 func (d NilRoleDAO) LoadByName(name string) (*Role, error) {
-	if RoleNil.Name == name {
-		return &RoleNil, nil
+	roleNil := RoleNil()
+	if roleNil.Name == name {
+		return &roleNil, nil
 	}
 	return d.RoleDAO.LoadByName(name)
 }

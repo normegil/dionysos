@@ -82,6 +82,7 @@ func defaultPolicies() []security.CasbinRule {
 	return rules
 }
 
+//nolint:funlen // Function is highly repetitive with low complexity
 func (v SchemaCreation) createTables() error {
 	row := v.DB.QueryRow(`SELECT pg_catalog.pg_get_userbyid(d.datdba) as "Owner" FROM pg_catalog.pg_database d WHERE d.datname = current_database();`)
 	var owner string
@@ -131,7 +132,7 @@ func (v SchemaCreation) createTables() error {
 		return fmt.Errorf("creating table '%s': %w", roleTableName, err)
 	}
 
-	userTableName := "user"
+	const userTableName = "user"
 	err = postgres.CreateTable(v.DB, postgres.TableInfos{
 		Queries: map[string]string{
 			"Table-Existence": fmt.Sprintf(tableExistence, userTableName),

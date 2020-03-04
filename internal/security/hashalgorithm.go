@@ -21,8 +21,8 @@ func (h HashAlgorithms) FindByID(id uuid.UUID) HashAlgorithm {
 	return nil
 }
 
-var (
-	AllHashAlgorithms = HashAlgorithms([]HashAlgorithm{
-		HashAlgorithmBcrypt14,
-	})
-)
+func AllHashAlgorithms() HashAlgorithms {
+	return []HashAlgorithm{
+		HashAlgorithmBcrypt14(),
+	}
+}

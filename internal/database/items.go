@@ -1,3 +1,4 @@
+//nolint:dupl // Dummy model trigger duplicates warning
 package database
 
 import (
@@ -64,8 +65,8 @@ func (dao *ItemDAO) Update(item dionysos.Item) error {
 	return nil
 }
 
-func (dao ItemDAO) Delete(itemID uuid.UUID) error {
-	if _, err := dao.DB.Exec(fmt.Sprintf("DELETE FROM item WHERE id = '%s'", itemID.String())); nil != err {
+func (dao ItemDAO) Delete(itemID fmt.Stringer) error {
+	if _, err := dao.DB.Exec("DELETE FROM item WHERE id = ?", itemID.String()); nil != err {
 		return fmt.Errorf("deleting item '%s': %w", itemID.String(), err)
 	}
 	return nil
@@ -80,7 +81,7 @@ func (dao ItemDAO) Search(params model.SearchParameters) (*model.SearchResult, e
 	if 0 != len(params.Searches) {
 		query += " WHERE "
 	}
-	for i, _ := range params.Searches {
+	for i := range params.Searches {
 		if i != 0 {
 			query += " OR "
 		}

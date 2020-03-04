@@ -1,5 +1,7 @@
 package database
 
-var Extentions = []string{
-	"pgcrypto",
+func Extentions() []string {
+	return []string{
+		"pgcrypto",
+	}
 }

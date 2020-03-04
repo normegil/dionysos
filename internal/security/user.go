@@ -14,7 +14,7 @@ type User struct {
 }
 
 func NewUser(name, password string, role Role) (*User, error) {
-	hashAlgorithm := HashAlgorithmBcrypt14
+	hashAlgorithm := HashAlgorithmBcrypt14()
 	hash, err := hashAlgorithm.HashAndSalt(password)
 	if err != nil {
 		return nil, fmt.Errorf("hash password of new user: %w", err)
@@ -37,10 +37,12 @@ func (u User) ValidatePassword(password string) error {
 	return u.HashAlgorithm.Validate(u.PasswordHash, password)
 }
 
-var UserAnonymous = User{
-	ID:            uuid.Nil,
-	Name:          "anonymous",
-	PasswordHash:  []byte(""),
-	HashAlgorithm: HashAlgorithmBcrypt14,
-	Role:          RoleNil,
+func UserAnonymous() User {
+	return User{
+		ID:            uuid.Nil,
+		Name:          "anonymous",
+		PasswordHash:  []byte(""),
+		HashAlgorithm: HashAlgorithmBcrypt14(),
+		Role:          RoleNil(),
+	}
 }

@@ -1,3 +1,4 @@
+//nolint:dupl // Dummy model trigger duplicates warning
 package database
 
 import (
@@ -84,8 +85,8 @@ func (dao *StorageDAO) Update(storage dionysos.Storage) error {
 	return nil
 }
 
-func (dao StorageDAO) Delete(storageID uuid.UUID) error {
-	if _, err := dao.DB.Exec(fmt.Sprintf("DELETE FROM storage WHERE id = '%s'", storageID.String())); nil != err {
+func (dao StorageDAO) Delete(storageID fmt.Stringer) error {
+	if _, err := dao.DB.Exec("DELETE FROM storage WHERE id = ?", storageID.String()); nil != err {
 		return fmt.Errorf("deleting storage '%s': %w", storageID.String(), err)
 	}
 	return nil
@@ -100,7 +101,7 @@ func (dao StorageDAO) Search(params model.SearchParameters) (*model.SearchResult
 	if 0 != len(params.Searches) {
 		query += " WHERE "
 	}
-	for i, _ := range params.Searches {
+	for i := range params.Searches {
 		if i != 0 {
 			query += " OR "
 		}

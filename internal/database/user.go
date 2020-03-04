@@ -29,12 +29,12 @@ func (d UserDAO) Load(username string) (*security.User, error) {
 		}
 		return nil, fmt.Errorf("loading user '%s': %w", username, err)
 	}
-	algorithm := security.AllHashAlgorithms.FindByID(algorithmID)
+	algorithm := security.AllHashAlgorithms().FindByID(algorithmID)
 	if nil == algorithm {
 		return nil, fmt.Errorf("loading user '%s': algorithm not found for id '%s'", username, algorithmID)
 	}
 
-	role, err := RoleDAO{DB: d.DB}.LoadByID(roleID)
+	role, err := RoleDAO(d).LoadByID(roleID)
 	if err != nil {
 		return nil, fmt.Errorf("loading user '%s': %w", username, err)
 	}

@@ -1,3 +1,4 @@
+//nolint:dupl // Dummy model trigger duplicates warning
 package api
 
 import (
@@ -160,7 +161,7 @@ type StorageDAO interface {
 	LoadAll(options model.CollectionOptions) ([]dionysos.Storage, error)
 	Save(storage dionysos.Storage) (bool, error)
 	TotalNumberOfItem(filter string) (*model.Natural, error)
-	Delete(id uuid.UUID) error
+	Delete(id fmt.Stringer) error
 }
 
 type storageDTO struct {

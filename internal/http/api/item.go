@@ -1,3 +1,4 @@
+//nolint:dupl // Dummy model trigger duplicates warning
 package api
 
 import (
@@ -161,7 +162,7 @@ type ItemDAO interface {
 	LoadAll(options model.CollectionOptions) ([]dionysos.Item, error)
 	Save(item dionysos.Item) (bool, error)
 	TotalNumberOfItem(filter string) (*model.Natural, error)
-	Delete(id uuid.UUID) error
+	Delete(id fmt.Stringer) error
 }
 
 type itemDTO struct {

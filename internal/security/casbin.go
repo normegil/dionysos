@@ -90,8 +90,8 @@ func (r CasbinRule) ToRule(dao RoleDAO) (*Policy, error) {
 	}
 
 	policyRoleName := splittedValue[0]
-	if policyRoleName == RoleNilPolicyReference {
-		policyRoleName = RoleNil.Name
+	if policyRoleName == RoleNilPolicyReference() {
+		policyRoleName = RoleNil().Name
 	}
 
 	role, err := dao.LoadByName(policyRoleName)

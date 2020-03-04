@@ -11,6 +11,6 @@ type AnonymousUserSetter struct {
 }
 
 func (a AnonymousUserSetter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	r = r.WithContext(context.WithValue(r.Context(), KeyUser, security.UserAnonymous))
+	r = r.WithContext(context.WithValue(r.Context(), KeyUser, security.UserAnonymous()))
 	a.Handler.ServeHTTP(w, r)
 }
