@@ -40,6 +40,7 @@ func (c RightsController) current(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	if _, err := w.Write(rightsBytes); nil != err {
 		c.ErrHandler.Handle(w, err)
 		return
@@ -47,5 +48,5 @@ func (c RightsController) current(w http.ResponseWriter, r *http.Request) {
 }
 
 type RightsDAO interface {
-	LoadForUser(security.User) ([]security.ResourceRights, error)
+	LoadForUser(security.User) ([]*security.ResourceRights, error)
 }

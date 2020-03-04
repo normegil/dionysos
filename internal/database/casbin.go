@@ -51,7 +51,7 @@ func (d CasbinDAO) LoadAll() ([]security.CasbinRule, error) {
 	return rules, nil
 }
 
-func (d CasbinDAO) LoadAsRolesRights() ([]security.RoleRights, error) {
+func (d CasbinDAO) LoadAsRolesRights() ([]*security.RoleRights, error) {
 	rules, err := d.LoadAll()
 	if err != nil {
 		return nil, fmt.Errorf("load all rules: %w", err)
@@ -70,7 +70,7 @@ func (d CasbinDAO) LoadAsRolesRights() ([]security.RoleRights, error) {
 	return policies.ToRoleRights(), nil
 }
 
-func (d CasbinDAO) LoadForUser(user security.User) ([]security.ResourceRights, error) {
+func (d CasbinDAO) LoadForUser(user security.User) ([]*security.ResourceRights, error) {
 	rolesRights, err := d.LoadAsRolesRights()
 	if err != nil {
 		return nil, fmt.Errorf("load all rules: %w", err)

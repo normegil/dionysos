@@ -7,10 +7,9 @@ type Role struct {
 	Name string    `json:"name"`
 }
 
-var RoleNil = Role{
-	ID:   uuid.Nil,
-	Name: "none",
-}
+var RoleNil Role
+
+var RoleNilPolicyReference = "none"
 
 type RoleDAO interface {
 	LoadByName(string) (*Role, error)

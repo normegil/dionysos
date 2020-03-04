@@ -10,45 +10,48 @@ import (
 
 type Policies []Policy
 
-func (p Policies) ToRoleRights() []RoleRights {
-	rights := make([]RoleRights, 0)
+func (p Policies) ToRoleRights() []*RoleRights {
+	rights := make([]*RoleRights, 0)
 	for _, policy := range p {
-		var foundRoleRight RoleRights
+		var foundRoleRight *RoleRights
 		for _, roleRight := range rights {
 			if policy.Role == roleRight.Role {
 				foundRoleRight = roleRight
 			}
 		}
-		if foundRoleRight.Role == RoleNil {
-			foundRoleRight = RoleRights{
+		if nil == foundRoleRight {
+			foundRoleRight = &RoleRights{
 				Role:   policy.Role,
-				Rights: make([]ResourceRights, 0),
+				Rights: make([]*ResourceRights, 0),
 			}
+			rights = append(rights, foundRoleRight)
 		}
 
-		var foundRessourceRight ResourceRights
+		var foundRessourceRight *ResourceRights
 		for _, ressourceRight := range foundRoleRight.Rights {
 			if string(policy.Resource) == ressourceRight.Name {
 				foundRessourceRight = ressourceRight
 			}
 		}
-		if foundRessourceRight.Name == "" {
-			foundRessourceRight = ResourceRights{
-				Name:    string(policy.Resource),
-				Actions: make([]string, 0),
+		if nil == foundRessourceRight {
+			foundRessourceRight = &ResourceRights{
+				Name:           string(policy.Resource),
+				AllowedActions: make([]string, 0),
 			}
+			foundRoleRight.Rights = append(foundRoleRight.Rights, foundRessourceRight)
 		}
 
 		foundAction := false
-		for _, action := range foundRessourceRight.Actions {
+		for _, action := range foundRessourceRight.AllowedActions {
 			if string(policy.Action) == action {
 				foundAction = true
 			}
 		}
 		if !foundAction {
-			foundRessourceRight.Actions = append(foundRessourceRight.Actions, string(policy.Action))
+			foundRessourceRight.AllowedActions = append(foundRessourceRight.AllowedActions, string(policy.Action))
 		}
 	}
+
 	return rights
 }
 
@@ -86,9 +89,14 @@ func (r CasbinRule) ToRule(dao RoleDAO) (*Policy, error) {
 		return nil, fmt.Errorf("policy has wrong format: %+v", r)
 	}
 
-	role, err := dao.LoadByName(splittedValue[0])
+	policyRoleName := splittedValue[0]
+	if policyRoleName == RoleNilPolicyReference {
+		policyRoleName = RoleNil.Name
+	}
+
+	role, err := dao.LoadByName(policyRoleName)
 	if err != nil {
-		return nil, fmt.Errorf("loading role '%s': %w", splittedValue[0], err)
+		return nil, fmt.Errorf("loading role '%s': %w", policyRoleName, err)
 	}
 
 	return &Policy{
