@@ -6,6 +6,4 @@ export default interface SearchResult<T extends Namable> {
   results: T[];
 }
 
-export interface PrintableResult extends Identifiable, Namable {
-
-}
+export interface PrintableResult extends Identifiable, Namable {}

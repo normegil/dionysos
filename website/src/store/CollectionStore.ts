@@ -45,7 +45,7 @@ export default class CollectionStore<FinalType, DTO>
   }
 
   getters = {
-    resourceName: (state: Collection<FinalType>): string => {
+    resourceName: (): string => {
       return this.resourceName;
     }
   };
