@@ -12,20 +12,20 @@
         :placeholder="filterPlaceholder"
         :searched="filter"
         @search="filterCollection"
-        v-if="$store.getters.auth.hasAccess(resource, 'read')"
+        v-if="allowedReadAccess"
       />
       <Button
         icon="las la-plus"
         :title="$t('ui.button.add')"
         @click="$emit('create-item')"
-        v-if="$store.getters.auth.hasAccess(resource, 'write')"
+        v-if="allowedWriteAccess"
       />
     </div>
     <div class="collection__container-box">
       <Table
         :headings="tableHeaders"
         :content="items"
-        :readonly="$store.getters.auth.hasAccess(resource, 'write')"
+        :readonly="!allowedWriteAccess"
         @edit="editItem"
         @remove="removeItem"
       />
@@ -67,6 +67,14 @@ export default class CollectionManager extends Vue {
 
   get resource(): string {
     return this.$store.getters[this.storeNamespace + "/resourceName"];
+  }
+
+  get allowedReadAccess(): boolean {
+    return this.$store.getters["auth/hasAccess"](this.resource, "read");
+  }
+
+  get allowedWriteAccess(): boolean {
+    return this.$store.getters["auth/hasAccess"](this.resource, "write");
   }
 
   get filter(): string {

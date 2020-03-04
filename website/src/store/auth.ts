@@ -39,7 +39,7 @@ export const AUTH: Module<AuthState, RootState> = {
 
         for (const right of state.rights) {
           if (right.name === resource) {
-            for (const rightAction of right.actions) {
+            for (const rightAction of right.allowedActions) {
               if (rightAction === action) {
                 return true;
               }
@@ -96,7 +96,7 @@ export const AUTH: Module<AuthState, RootState> = {
         }
       });
       ctx.commit("setAuthentified", undefined);
-      ctx.commit("setRights", undefined);
+      return ctx.dispatch("loadRights");
     },
     requireLogin: async (ctx): Promise<boolean> => {
       ctx.commit("setShowLoginModal", true);

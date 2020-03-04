@@ -1,5 +1,5 @@
 <template>
-  <div v-if="$store.getters.auth.hasAccess(link.resource, 'read')">
+  <div v-if="allowed">
     <router-link v-if="!isLink" :to="link.href" class="main-menu-item">
       <i :class="link.icon" class="main-menu-item__icon" />
       <span class="main-menu-item__text"> {{ link.title }}</span>
@@ -24,6 +24,10 @@ export default class MainMenuItem extends Vue {
 
   @Prop({ default: false, required: false })
   isLink!: boolean;
+
+  get allowed(): boolean {
+    return this.$store.getters["auth/hasAccess"](this.link.resource, "read");
+  }
 }
 </script>
 
