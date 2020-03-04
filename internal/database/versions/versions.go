@@ -35,7 +35,7 @@ func (m Syncer) UpgradeAll() error {
 	for i := currentVersion + 1; i <= highestVersion; i++ {
 		tx, err := m.db.Begin()
 		if err != nil {
-			return fmt.Errorf("upgrading version '%d': opening transaction: %w", err)
+			return fmt.Errorf("upgrading version '%d': opening transaction: %w", i, err)
 		}
 		log.Info().Int("version", i).Msg("Applying new database version")
 		if err := m.versions[i].Apply(); nil != err {
@@ -53,7 +53,7 @@ func (m Syncer) UpgradeAll() error {
 			return newErr
 		}
 		if err := tx.Commit(); err != nil {
-			return fmt.Errorf("upgrading version '%d': committing transaction: %w", err)
+			return fmt.Errorf("upgrading version '%d': committing transaction: %w", i, err)
 		}
 	}
 	log.Info().Int("from", currentVersion).Int("to", highestVersion).Msg("Database upgraded")

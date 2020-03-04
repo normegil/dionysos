@@ -41,7 +41,7 @@ func (v SchemaCreation) insertData() error {
 	}
 	for _, role := range defaultRoles {
 		if err := roleDAO.Insert(role); nil != err {
-			return fmt.Errorf("inserting '%s' role: %w", err)
+			return fmt.Errorf("inserting '%s' role: %w", role.Name, err)
 		}
 	}
 
