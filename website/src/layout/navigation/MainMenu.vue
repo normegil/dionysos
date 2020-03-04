@@ -40,7 +40,7 @@ export default class MainMenu extends Vue {
         title: this.$t("ui.menu.main.items") as string,
         href: "/items",
         icon: "las la-boxes",
-        resource: "storage"
+        resource: "item"
       }
     ];
   }
