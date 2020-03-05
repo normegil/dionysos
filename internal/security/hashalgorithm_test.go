@@ -47,5 +47,4 @@ func TestHashAlgorithms_FindByID(t *testing.T) {
 			}
 		})
 	}
-
 }
