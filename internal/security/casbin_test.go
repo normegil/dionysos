@@ -1,3 +1,4 @@
+//nolint:funlen
 package security_test
 
 import (
@@ -76,7 +77,6 @@ func TestCasbinRule_ToRule(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func TestCasbinRule_ToRule_NotAPolicy(t *testing.T) {
@@ -100,5 +100,93 @@ func TestCasbinRule_ToRule_NotAPolicy(t *testing.T) {
 		t.Fatal("error expected but got none")
 	} else if !security.IsANotPolicyError(err) {
 		t.Errorf("Expected a not a policy error but got: %s", err.Error())
+	}
+}
+
+func TestPolicies_ToRoleRights(t *testing.T) {
+	role1 := security.Role{
+		ID:   uuid.New(),
+		Name: "testrole1",
+	}
+	role2 := security.Role{
+		ID:   uuid.New(),
+		Name: "testrole2",
+	}
+
+	tests := []struct {
+		name     string
+		policies security.Policies
+		expected []*security.RoleRights
+	}{
+		{
+			name:     "Empty policies",
+			policies: security.Policies([]security.Policy{}),
+			expected: []*security.RoleRights{},
+		},
+		{
+			name: "One role",
+			policies: security.Policies([]security.Policy{
+				{Role: role1, Resource: model.ResourceItem, Action: model.ActionRead},
+				{Role: role1, Resource: model.ResourceItem, Action: model.ActionWrite},
+				{Role: role1, Resource: model.ResourceStorage, Action: model.ActionRead},
+			}),
+			expected: []*security.RoleRights{
+				{
+					Role: role1,
+					Rights: []*security.ResourceRights{
+						{Name: string(model.ResourceItem), AllowedActions: []string{
+							string(model.ActionRead),
+							string(model.ActionWrite),
+						}},
+						{Name: string(model.ResourceStorage), AllowedActions: []string{string(model.ActionRead)}},
+					},
+				},
+			},
+		},
+		{
+			name: "Multiple roles",
+			policies: security.Policies([]security.Policy{
+				{Role: role1, Resource: model.ResourceItem, Action: model.ActionRead},
+				{Role: role1, Resource: model.ResourceItem, Action: model.ActionWrite},
+				{Role: role2, Resource: model.ResourceItem, Action: model.ActionRead},
+				{Role: role1, Resource: model.ResourceStorage, Action: model.ActionRead},
+				{Role: role2, Resource: model.ResourceStorage, Action: model.ActionRead},
+			}),
+			expected: []*security.RoleRights{
+				{
+					Role: role1,
+					Rights: []*security.ResourceRights{
+						{Name: string(model.ResourceItem), AllowedActions: []string{
+							string(model.ActionRead),
+							string(model.ActionWrite),
+						}},
+						{Name: string(model.ResourceStorage), AllowedActions: []string{string(model.ActionRead)}},
+					},
+				},
+				{
+					Role: role2,
+					Rights: []*security.ResourceRights{
+						{Name: string(model.ResourceItem), AllowedActions: []string{string(model.ActionRead)}},
+						{Name: string(model.ResourceStorage), AllowedActions: []string{string(model.ActionRead)}},
+					},
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			rights := test.policies.ToRoleRights()
+
+			if len(rights) != len(test.expected) {
+				t.Fatalf("Wrong number of role rights {expected:%d;got:%d}", len(test.expected), len(rights))
+			}
+
+			for i, expected := range test.expected {
+				if !expected.Equal(*rights[i]) {
+					t.Fatalf("Not equal value {index:%d;expected:%+v;got:%+v}", i, expected, *rights[i])
+				}
+			}
+		})
 	}
 }
