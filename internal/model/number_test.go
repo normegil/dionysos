@@ -31,7 +31,6 @@ func TestNewNatural(t *testing.T) {
 			if nil != err && !test.expectError {
 				t.Errorf("didn't expect an error for '%d': %w", test.tested, err)
 			}
-
 		})
 	}
 }
