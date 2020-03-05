@@ -34,7 +34,7 @@ func TestNilRoleDAO_LoadByName(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			dao := security.NilRoleDAO{RoleDAO: security.Test_FakeRoleDAO{Roles: test.availableRoles}}
+			dao := security.NilRoleDAO{RoleDAO: security.Test_MemoryRoleDAO{Roles: test.availableRoles}}
 			role, err := dao.LoadByName(test.searched)
 			if err != nil {
 				t.Fatal(err)
