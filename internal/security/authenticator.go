@@ -2,16 +2,17 @@ package security
 
 import (
 	"fmt"
+	"github.com/normegil/dionysos/internal/dao"
 )
 
-type DatabaseAuthentication struct {
+type Authenticator struct {
 	DAO UserDAO
 }
 
-func (a DatabaseAuthentication) Authenticate(username string, password string) (*User, error) {
+func (a Authenticator) Authenticate(username string, password string) (*User, error) {
 	user, err := a.DAO.Load(username)
 	if err != nil {
-		if a.DAO.IsUserNotExistError(err) {
+		if dao.IsNotFoundError(err) {
 			return nil, userNotExistError{
 				Username: username,
 				Original: err,
@@ -28,5 +29,4 @@ func (a DatabaseAuthentication) Authenticate(username string, password string) (
 
 type UserDAO interface {
 	Load(username string) (*User, error)
-	IsUserNotExistError(err error) bool
 }

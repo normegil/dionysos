@@ -3,7 +3,7 @@ package versions
 import (
 	"database/sql"
 	"fmt"
-	"github.com/normegil/dionysos/internal/database"
+	"github.com/normegil/dionysos/internal/dao/database"
 	"github.com/rs/zerolog/log"
 )
 

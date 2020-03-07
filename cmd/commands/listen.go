@@ -9,8 +9,8 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/markbates/pkger"
 	"github.com/normegil/dionysos/internal/configuration"
-	"github.com/normegil/dionysos/internal/database"
-	"github.com/normegil/dionysos/internal/database/versions"
+	"github.com/normegil/dionysos/internal/dao/database"
+	"github.com/normegil/dionysos/internal/dao/database/versions"
 	internalHTTP "github.com/normegil/dionysos/internal/http"
 	"github.com/normegil/dionysos/internal/http/api"
 	httperror "github.com/normegil/dionysos/internal/http/error"
@@ -182,7 +182,7 @@ func errorHandler() httperror.HTTPErrorHandler {
 }
 
 func newRequestAuthenticator(userDAO security.UserDAO, sessionManager *scs.SessionManager) securitymiddleware.RequestAuthenticator {
-	authenticator := security.DatabaseAuthentication{DAO: userDAO}
+	authenticator := security.Authenticator{DAO: userDAO}
 	updater := securitymiddleware.AuthenticatedUserSessionUpdater{
 		SessionManager: sessionManager,
 	}

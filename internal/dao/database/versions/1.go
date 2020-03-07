@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/normegil/dionysos"
 	"github.com/normegil/dionysos/internal/configuration"
-	"github.com/normegil/dionysos/internal/database"
+	"github.com/normegil/dionysos/internal/dao/database"
 	"github.com/normegil/dionysos/internal/security"
 	"github.com/normegil/postgres"
 	"github.com/rs/zerolog/log"
