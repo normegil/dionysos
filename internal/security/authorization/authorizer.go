@@ -22,7 +22,7 @@ func (c CasbinAuthorizer) IsAuthorized(role security.Role, resource model.Resour
 	}
 	authorized, err := c.Enforcer.EnforceSafe(roleName, string(resource), string(action))
 	if err != nil {
-		return false, fmt.Errorf("loading authorizations for %s, %s %s: %w", roleName, resource, action, err)
+		return false, fmt.Errorf("loading authorizations for '%s, %s %s': %w", roleName, resource, action, err)
 	}
 	return authorized, nil
 }
