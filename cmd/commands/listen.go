@@ -2,29 +2,15 @@ package commands
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
-	"github.com/alexedwards/scs/v2"
-	"github.com/casbin/casbin"
-	"github.com/go-chi/chi"
-	"github.com/markbates/pkger"
 	"github.com/normegil/dionysos/internal/configuration"
-	"github.com/normegil/dionysos/internal/dao/database"
-	"github.com/normegil/dionysos/internal/dao/database/versions"
 	internalHTTP "github.com/normegil/dionysos/internal/http"
-	"github.com/normegil/dionysos/internal/http/api"
-	httperror "github.com/normegil/dionysos/internal/http/error"
-	"github.com/normegil/dionysos/internal/http/middleware"
-	securitymiddleware "github.com/normegil/dionysos/internal/http/middleware/security"
-	"github.com/normegil/dionysos/internal/security"
-	"github.com/normegil/dionysos/internal/security/authorization"
+	"github.com/normegil/dionysos/internal/http/listener"
 	"github.com/normegil/postgres"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"io"
 	"net"
-	"net/http"
 	"os"
 	"os/signal"
 	"time"
@@ -100,21 +86,20 @@ func listenRun(_ *cobra.Command, _ []string) {
 	stopHTTPServer := make(chan os.Signal, 1)
 	signal.Notify(stopHTTPServer, os.Interrupt)
 
-	db, err := initDatabase()
+	handler, err := listener.NewListener(listener.Configuration{
+		APILogErrors: viper.GetBool(configuration.KeyAPIShowError.Name),
+		Database:     getDatabaseConfiguration(),
+	}).Load()
 	if err != nil {
-		log.Fatal().Err(err).Msg("initializing database")
+		log.Fatal().Err(err).Msg("Initializing Listener")
 	}
-	defer close(db)
 
 	addr := net.TCPAddr{
 		IP:   net.ParseIP(viper.GetString(configuration.KeyAddress.Name)),
 		Port: viper.GetInt(configuration.KeyPort.Name),
 		Zone: "",
 	}
-	if err != nil {
-		log.Fatal().Err(err).Msg("creating routing rules")
-	}
-	closeHttpServer := internalHTTP.ListenAndServe(addr, toServerHandler(db))
+	closeHttpServer := internalHTTP.ListenAndServe(addr, handler)
 	defer func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
@@ -126,27 +111,6 @@ func listenRun(_ *cobra.Command, _ []string) {
 	<-stopHTTPServer
 }
 
-func toServerHandler(db *sql.DB) middleware.RequestLogger {
-	sessionManager := scs.New()
-	router := internalHTTP.NewRouter(route(db))
-	sessionHandler := securitymiddleware.SessionHandler{
-		SessionManager:       sessionManager,
-		RequestAuthenticator: newRequestAuthenticator(database.UserDAO{DB: db}, sessionManager),
-		ErrHandler:           errorHandler(),
-		UserDAO:              database.UserDAO{DB: db},
-		Handler:              router,
-	}
-	anonymousUserSetter := securitymiddleware.AnonymousUserSetter{Handler: sessionHandler}
-	handler := middleware.RequestLogger{Handler: anonymousUserSetter}
-	return handler
-}
-
-func close(closer io.Closer) {
-	if err := closer.Close(); nil != err {
-		log.Error().Err(err).Msg("Could not close resource")
-	}
-}
-
 func getDatabaseConfiguration() postgres.Configuration {
 	return postgres.Configuration{
 		Address:            viper.GetString(configuration.KeyDatabaseAddress.Name),
@@ -154,109 +118,6 @@ func getDatabaseConfiguration() postgres.Configuration {
 		User:               viper.GetString(configuration.KeyDatabaseUser.Name),
 		Password:           viper.GetString(configuration.KeyDatabasePassword.Name),
 		Database:           viper.GetString(configuration.KeyDatabaseName.Name),
-		RequiredExtentions: database.Extentions(),
+		RequiredExtentions: make([]string, 0),
 	}
-}
-
-func initDatabase() (*sql.DB, error) {
-	dbCfg := getDatabaseConfiguration()
-	db, err := postgres.New(dbCfg)
-	if err != nil {
-		return nil, fmt.Errorf("creating database connection failed: %w", err)
-	}
-
-	manager, err := versions.NewSyncer(db)
-	if err != nil {
-		close(db)
-		return db, fmt.Errorf("instantiate version manager: %w", err)
-	}
-	if err = manager.UpgradeAll(); nil != err {
-		close(db)
-		return db, fmt.Errorf("upgrading database: %w", err)
-	}
-	return db, nil
-}
-
-func errorHandler() httperror.HTTPErrorHandler {
-	return httperror.HTTPErrorHandler{LogUserError: viper.GetBool(configuration.KeyAPIShowError.Name)}
-}
-
-func newRequestAuthenticator(userDAO security.UserDAO, sessionManager *scs.SessionManager) securitymiddleware.RequestAuthenticator {
-	authenticator := security.Authenticator{DAO: userDAO}
-	updater := securitymiddleware.AuthenticatedUserSessionUpdater{
-		SessionManager: sessionManager,
-	}
-	requestAuthenticator := securitymiddleware.RequestAuthenticator{
-		Authenticator:   authenticator,
-		OnAuthenticated: updater.RenewSessionOnAuthenticatedUser,
-	}
-	return requestAuthenticator
-}
-
-func route(db *sql.DB) map[string]http.Handler {
-	itemDAO := &database.ItemDAO{DB: db}
-	storageDAO := &database.StorageDAO{DB: db}
-	casbinDAO := &database.CasbinDAO{
-		DB:      db,
-		RoleDAO: &security.NilRoleDAO{RoleDAO: &database.RoleDAO{DB: db}},
-	}
-
-	authorizer := newAuthorizer(casbinDAO)
-	searchDAO := database.SearchDAO{
-		Searchables: []database.Searcheable{
-			itemDAO,
-			storageDAO,
-		},
-		Authorizer: authorizer,
-	}
-
-	errorHandler := errorHandler()
-	authorizationHandler := securitymiddleware.AuthorizationHandler{
-		Authorizer: authorizer,
-		ErrHandler: errorHandler,
-	}
-	apiRoutes := make(map[string]http.Handler)
-	apiRoutes["/storages"] = api.StorageController{
-		StorageDAO: storageDAO,
-		ErrHandler: errorHandler,
-	}.Route(authorizationHandler)
-	apiRoutes["/items"] = api.ItemController{
-		ItemDAO:    itemDAO,
-		ErrHandler: errorHandler,
-	}.Route(authorizationHandler)
-	apiRoutes["/searches"] = api.SearchController{
-		DAO:        searchDAO,
-		ErrHandler: errorHandler,
-	}.Route()
-	userCtrl := api.UserController{ErrHandler: errorHandler}
-	apiRoutes["/users"] = userCtrl.Route()
-	rightsCtrl := api.RightsController{
-		DAO:        casbinDAO,
-		ErrHandler: errorHandler,
-	}
-	apiRoutes["/rights"] = rightsCtrl.Route()
-	apiCtrl := internalHTTP.MultiController{
-		Routes: apiRoutes,
-		OnRegister: func(rt *chi.Mux) {
-			rt.Get("/*", func(w http.ResponseWriter, r *http.Request) {
-				http.StripPrefix("/api", http.FileServer(pkger.Dir("/api"))).ServeHTTP(w, r)
-			})
-		},
-	}
-
-	routes := make(map[string]http.Handler)
-	routes["/api"] = apiCtrl.Route()
-	routes["/"] = http.FileServer(pkger.Dir("/website/dist"))
-	routes["/auth"] = api.AuthController{
-		ErrHandler:     errorHandler,
-		UserController: userCtrl,
-	}.Route()
-	return routes
-}
-
-func newAuthorizer(dao authorization.PolicyDAO) authorization.CasbinAuthorizer {
-	adapter := &authorization.Adapter{DAO: dao}
-	enforcer := casbin.NewEnforcer(authorization.Model(), adapter)
-	authorizer := authorization.CasbinAuthorizer{Enforcer: enforcer}
-	return authorizer
 }
