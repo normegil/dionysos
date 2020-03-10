@@ -58,6 +58,15 @@ func (dao *ItemDAO) Insert(item dionysos.Item) error {
 	return nil
 }
 
+func (dao *ItemDAO) InsertAll(items []dionysos.Item) error {
+	for _, item := range items {
+		if err := dao.Insert(item); nil != err {
+			return err
+		}
+	}
+	return nil
+}
+
 func (dao *ItemDAO) Update(item dionysos.Item) error {
 	if _, err := dao.Querier.Exec(`UPDATE item SET name = $2 WHERE id = $1`, item.ID, item.Name); err != nil {
 		return fmt.Errorf("updating %+v: %w", item, err)
