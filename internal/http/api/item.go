@@ -147,12 +147,8 @@ func (c ItemController) toDefaultCollectionOptions(options *model.CollectionOpti
 	if 0 != options.Limit.Number() {
 		return options
 	}
-	newLimit, err := model.NewNatural(50)
-	if err != nil {
-		panic(fmt.Errorf("should not fail: %w", err))
-	}
 	return &model.CollectionOptions{
-		Limit:  *newLimit,
+		Limit:  *model.MustNewNatural(DefaultLimit),
 		Offset: options.Offset,
 		Filter: options.Filter,
 	}

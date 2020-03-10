@@ -1,7 +1,6 @@
 package database
 
 import (
-	"database/sql"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/normegil/dionysos/internal/security"
@@ -9,12 +8,12 @@ import (
 )
 
 type CasbinDAO struct {
-	DB      *sql.DB
+	Querier Querier
 	RoleDAO security.RoleDAO
 }
 
 func (d CasbinDAO) LoadAll() ([]security.CasbinRule, error) {
-	rows, err := d.DB.Query("SELECT id, type, value FROM policy")
+	rows, err := d.Querier.Query("SELECT id, type, value FROM policy")
 
 	if err != nil {
 		return nil, fmt.Errorf("select all policies: %w", err)
@@ -85,7 +84,7 @@ func (d CasbinDAO) LoadForUser(user security.User) ([]*security.ResourceRights, 
 }
 
 func (d CasbinDAO) DeleteAll() error {
-	if _, err := d.DB.Exec(fmt.Sprintf(`DELETE FROM policy`)); nil != err {
+	if _, err := d.Querier.Exec(fmt.Sprintf(`DELETE FROM policy`)); nil != err {
 		return fmt.Errorf("deleting all policies: %w", err)
 	}
 	return nil
@@ -101,7 +100,7 @@ func (d CasbinDAO) InsertMultiple(rules []security.CasbinRule) error {
 }
 
 func (d CasbinDAO) Insert(rule security.CasbinRule) error {
-	if _, err := d.DB.Exec(`INSERT INTO policy (id, type, value) VALUES (gen_random_uuid(), $1, $2)`, rule.Type, rule.Value); nil != err {
+	if _, err := d.Querier.Exec(`INSERT INTO policy (id, type, value) VALUES (gen_random_uuid(), $1, $2)`, rule.Type, rule.Value); nil != err {
 		return fmt.Errorf("inserting %+v: %w", rule, err)
 	}
 	return nil

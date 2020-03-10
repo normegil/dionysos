@@ -8,11 +8,11 @@ import (
 )
 
 type RoleDAO struct {
-	DB *sql.DB
+	Querier Querier
 }
 
 func (d RoleDAO) LoadByID(searchedID uuid.UUID) (*security.Role, error) {
-	row := d.DB.QueryRow(`SELECT id, name FROM "role" WHERE id=$1`, searchedID)
+	row := d.Querier.QueryRow(`SELECT id, name FROM "role" WHERE id=$1`, searchedID)
 	role, err := d.toRole(row)
 	if err != nil {
 		return nil, fmt.Errorf("loading role by id '%s': %w", searchedID, err)
@@ -33,7 +33,7 @@ func (d RoleDAO) toRole(row *sql.Row) (*security.Role, error) {
 }
 
 func (d RoleDAO) LoadByName(rolename string) (*security.Role, error) {
-	row := d.DB.QueryRow(`SELECT id, name FROM "role" WHERE name=$1`, rolename)
+	row := d.Querier.QueryRow(`SELECT id, name FROM "role" WHERE name=$1`, rolename)
 	role, err := d.toRole(row)
 	if err != nil {
 		return nil, fmt.Errorf("loading role by name '%s': %w", rolename, err)
@@ -42,7 +42,7 @@ func (d RoleDAO) LoadByName(rolename string) (*security.Role, error) {
 }
 
 func (d RoleDAO) Insert(role security.Role) error {
-	_, err := d.DB.Exec(`INSERT INTO role (id, name) VALUES (gen_random_uuid(), $1)`, role.Name)
+	_, err := d.Querier.Exec(`INSERT INTO role (id, name) VALUES (gen_random_uuid(), $1)`, role.Name)
 	if err != nil {
 		return fmt.Errorf("inserting %+v: %w", role, err)
 	}

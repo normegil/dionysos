@@ -1,7 +1,6 @@
 package database
 
 import (
-	"database/sql"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/normegil/dionysos/internal/dao"
@@ -10,11 +9,11 @@ import (
 )
 
 type UserDAO struct {
-	DB *sql.DB
+	Querier Querier
 }
 
 func (d UserDAO) Load(username string) (*security.User, error) {
-	row := d.DB.QueryRow(`SELECT id, name, hash, algorithmID, roleID FROM "user" WHERE name=$1`, username)
+	row := d.Querier.QueryRow(`SELECT id, name, hash, algorithmID, roleID FROM "user" WHERE name=$1`, username)
 	var id uuid.UUID
 	var name string
 	var hash []byte
@@ -48,7 +47,7 @@ func (d UserDAO) Load(username string) (*security.User, error) {
 }
 
 func (d UserDAO) Insert(user security.User) error {
-	if _, err := d.DB.Exec(`INSERT INTO "user" (id, name, hash, algorithmID, roleID) VALUES (gen_random_uuid(), $1, $2::bytea, $3, $4);`, user.Name, user.PasswordHash, user.HashAlgorithm.ID(), user.Role.ID); err != nil {
+	if _, err := d.Querier.Exec(`INSERT INTO "user" (id, name, hash, algorithmID, roleID) VALUES (gen_random_uuid(), $1, $2::bytea, $3, $4);`, user.Name, user.PasswordHash, user.HashAlgorithm.ID(), user.Role.ID); err != nil {
 		return fmt.Errorf("inserting %s: %w", user.Name, err)
 	}
 	return nil

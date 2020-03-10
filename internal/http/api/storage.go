@@ -146,7 +146,7 @@ func (c StorageController) toDefaultCollectionOptions(options *model.CollectionO
 	if 0 != options.Limit.Number() {
 		return options
 	}
-	newLimit, err := model.NewNatural(50)
+	newLimit, err := model.NewNatural(DefaultLimit)
 	if err != nil {
 		panic(fmt.Errorf("should not fail: %w", err))
 	}

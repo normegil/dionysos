@@ -12,7 +12,7 @@ import (
 )
 
 type ItemDAO struct {
-	DB *sql.DB
+	Querier Querier
 }
 
 func (dao ItemDAO) Resource() model.Resource {
@@ -20,7 +20,7 @@ func (dao ItemDAO) Resource() model.Resource {
 }
 
 func (dao *ItemDAO) LoadAll(opts model.CollectionOptions) ([]dionysos.Item, error) {
-	rows, err := dao.DB.Query(`SELECT * FROM item WHERE UPPER(item.name) LIKE UPPER($1) ORDER BY name LIMIT $2 OFFSET $3;`, toDatabaseFilter(opts.Filter), opts.Limit.Number(), opts.Offset.Number())
+	rows, err := dao.Querier.Query(`SELECT * FROM item WHERE UPPER(item.name) LIKE UPPER($1) ORDER BY name LIMIT $2 OFFSET $3;`, toDatabaseFilter(opts.Filter), opts.Limit.Number(), opts.Offset.Number())
 	if err != nil {
 		return nil, fmt.Errorf("select all items %+v: %w", opts, err)
 	}
@@ -34,7 +34,7 @@ func (dao *ItemDAO) LoadAll(opts model.CollectionOptions) ([]dionysos.Item, erro
 }
 
 func (dao ItemDAO) TotalNumberOfItem(filter string) (*model.Natural, error) {
-	row := dao.DB.QueryRow(`SELECT count(*) FROM item WHERE UPPER(item.name) LIKE UPPER($1);`, toDatabaseFilter(filter))
+	row := dao.Querier.QueryRow(`SELECT count(*) FROM item WHERE UPPER(item.name) LIKE UPPER($1);`, toDatabaseFilter(filter))
 	var total int
 	if err := row.Scan(&total); nil != err {
 		return nil, fmt.Errorf("counting number of items: %w", err)
@@ -52,21 +52,21 @@ func (dao ItemDAO) Save(item dionysos.Item) (bool, error) {
 }
 
 func (dao *ItemDAO) Insert(item dionysos.Item) error {
-	if _, err := dao.DB.Exec(`INSERT INTO item(id, name) VALUES (gen_random_uuid(), $1)`, item.Name); err != nil {
+	if _, err := dao.Querier.Exec(`INSERT INTO item(id, name) VALUES (gen_random_uuid(), $1)`, item.Name); err != nil {
 		return fmt.Errorf("inserting %+v: %w", item, err)
 	}
 	return nil
 }
 
 func (dao *ItemDAO) Update(item dionysos.Item) error {
-	if _, err := dao.DB.Exec(`UPDATE item SET name = $2 WHERE id = $1`, item.ID, item.Name); err != nil {
+	if _, err := dao.Querier.Exec(`UPDATE item SET name = $2 WHERE id = $1`, item.ID, item.Name); err != nil {
 		return fmt.Errorf("updating %+v: %w", item, err)
 	}
 	return nil
 }
 
 func (dao ItemDAO) Delete(itemID fmt.Stringer) error {
-	if _, err := dao.DB.Exec("DELETE FROM item WHERE id = ?", itemID.String()); nil != err {
+	if _, err := dao.Querier.Exec("DELETE FROM item WHERE id = ?", itemID.String()); nil != err {
 		return fmt.Errorf("deleting item '%s': %w", itemID.String(), err)
 	}
 	return nil
@@ -97,7 +97,7 @@ func (dao ItemDAO) Search(params model.SearchParameters) (*model.SearchResult, e
 			searches = append(append(searches, modifiedSearchTerm), modifiedSearchTerm)
 		}
 	}
-	rows, err := dao.DB.Query(query, searches...)
+	rows, err := dao.Querier.Query(query, searches...)
 	if err != nil {
 		return nil, fmt.Errorf("search for items with parameters %+v: %w", params, err)
 	}

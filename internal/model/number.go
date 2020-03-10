@@ -13,6 +13,14 @@ func NewNatural(number int) (*Natural, error) {
 	return &Natural{number: number}, nil
 }
 
+func MustNewNatural(number int) *Natural {
+	natural, err := NewNatural(number)
+	if err != nil {
+		panic(err)
+	}
+	return natural
+}
+
 func (n Natural) Number() int {
 	return n.number
 }

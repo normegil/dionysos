@@ -2,10 +2,15 @@ package commands
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
+	"github.com/brianvoe/gofakeit"
+	"github.com/normegil/dionysos"
 	"github.com/normegil/dionysos/internal/configuration"
+	"github.com/normegil/dionysos/internal/dao/database"
 	internalHTTP "github.com/normegil/dionysos/internal/http"
 	"github.com/normegil/dionysos/internal/http/listener"
+	"github.com/normegil/dionysos/internal/security"
 	"github.com/normegil/postgres"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -86,12 +91,24 @@ func listenRun(_ *cobra.Command, _ []string) {
 	stopHTTPServer := make(chan os.Signal, 1)
 	signal.Notify(stopHTTPServer, os.Interrupt)
 
+	dbCfg := getDatabaseConfiguration()
 	handler, err := listener.NewListener(listener.Configuration{
 		APILogErrors: viper.GetBool(configuration.KeyAPIShowError.Name),
-		Database:     getDatabaseConfiguration(),
+		Database:     dbCfg,
 	}).Load()
 	if err != nil {
 		log.Fatal().Err(err).Msg("Initializing Listener")
+	}
+
+	if viper.GetBool(configuration.KeyDummyData.Name) {
+		db, err := postgres.New(dbCfg)
+		if err != nil {
+			log.Fatal().Err(err).Msg("initializing connection to database to insert dummy data")
+		}
+		if err = insertDummyData(db); nil != err {
+			log.Fatal().Err(err).Msg("inserting dummy data")
+		}
+
 	}
 
 	addr := net.TCPAddr{
@@ -120,4 +137,42 @@ func getDatabaseConfiguration() postgres.Configuration {
 		Database:           viper.GetString(configuration.KeyDatabaseName.Name),
 		RequiredExtentions: make([]string, 0),
 	}
+}
+
+func insertDummyData(db *sql.DB) error {
+	storageDAO := &database.StorageDAO{Querier: db}
+	itemDAO := &database.ItemDAO{Querier: db}
+	userDAO := &database.UserDAO{Querier: db}
+
+	log.Info().Msg("insert dummy data")
+	const dummyItemNb = 50
+
+	rolename := "user"
+	userrole, err := database.RoleDAO{Querier: db}.LoadByName(rolename)
+	if err != nil {
+		return fmt.Errorf("load '%s' role: %w", rolename, err)
+	}
+
+	user, err := security.NewUser("user", "user", *userrole)
+	if err != nil {
+		return fmt.Errorf("creating 'user' user: %w", err)
+	}
+	if err := userDAO.Insert(*user); nil != err {
+		return fmt.Errorf("inserting %s: %w", user.Name, err)
+	}
+
+	for i := 0; i < dummyItemNb; i++ {
+		storage := dionysos.Storage{Name: gofakeit.Company()}
+		if err := storageDAO.Insert(storage); nil != err {
+			return fmt.Errorf("inserting %+v: %w", storage, err)
+		}
+	}
+
+	for i := 0; i < dummyItemNb; i++ {
+		item := dionysos.Item{Name: gofakeit.BeerName()}
+		if err := itemDAO.Insert(item); nil != err {
+			return fmt.Errorf("inserting %+v: %w", item, err)
+		}
+	}
+	return nil
 }

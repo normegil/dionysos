@@ -90,9 +90,9 @@ func (l Listener) loadServerHandler(db *sql.DB) http.Handler {
 	router := internalHTTP.NewRouter(l.route(db))
 	sessionHandler := securitymiddleware.SessionHandler{
 		SessionManager:       sessionManager,
-		RequestAuthenticator: newRequestAuthenticator(database.UserDAO{DB: db}, sessionManager),
+		RequestAuthenticator: newRequestAuthenticator(database.UserDAO{Querier: db}, sessionManager),
 		ErrHandler:           httperror.HTTPErrorHandler{LogUserError: l.Configuration.APILogErrors},
-		UserDAO:              database.UserDAO{DB: db},
+		UserDAO:              database.UserDAO{Querier: db},
 		Handler:              router,
 	}
 	anonymousUserSetter := securitymiddleware.AnonymousUserSetter{Handler: sessionHandler}
@@ -101,11 +101,11 @@ func (l Listener) loadServerHandler(db *sql.DB) http.Handler {
 }
 
 func (l Listener) route(db *sql.DB) map[string]http.Handler {
-	itemDAO := &database.ItemDAO{DB: db}
-	storageDAO := &database.StorageDAO{DB: db}
+	itemDAO := &database.ItemDAO{Querier: db}
+	storageDAO := &database.StorageDAO{Querier: db}
 	casbinDAO := &database.CasbinDAO{
-		DB:      db,
-		RoleDAO: &security.NilRoleDAO{RoleDAO: &database.RoleDAO{DB: db}},
+		Querier: db,
+		RoleDAO: &security.NilRoleDAO{RoleDAO: &database.RoleDAO{Querier: db}},
 	}
 
 	authorizer := newAuthorizer(casbinDAO)
