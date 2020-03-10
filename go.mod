@@ -13,7 +13,7 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/lib/pq v1.3.0
 	github.com/markbates/pkger v0.13.0
-	github.com/normegil/postgres v0.0.0-20200212153307-fcf83d1d55a7
+	github.com/normegil/postgres v0.0.0-20200310214905-1795c39f26e2
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
 	github.com/rs/zerolog v1.17.2
 	github.com/spf13/cobra v0.0.5

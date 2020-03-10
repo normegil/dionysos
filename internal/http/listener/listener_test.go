@@ -23,7 +23,8 @@ func TestListener(t *testing.T) {
 		t.Skip("Skipping test")
 	}
 
-	lst, db := initTest(t)
+	lst, db, containerCfg := initTest(t)
+	defer postgres.Test_RemoveContainer(t, containerCfg.Identifier)
 	t.Run("GIVEN items exists", func(t *testing.T) {
 		test.Transaction(t, db, func(tx *sql.Tx) {
 			items := generateItems(100)
@@ -131,16 +132,14 @@ func TestListener(t *testing.T) {
 	})
 }
 
-func initTest(t testing.TB) (http.Handler, *sql.DB) {
+func initTest(t testing.TB) (http.Handler, *sql.DB, postgres.ContainerConfiguration) {
 	cfg, containerCfg := postgres.Test_Deploy(t)
-	defer postgres.Test_RemoveContainer(t, containerCfg.Identifier)
-
 	dbCfg := postgres.Configuration{
 		Address:  cfg.Address,
 		Port:     cfg.Port,
 		User:     cfg.User,
 		Password: cfg.Password,
-		Database: "dionysos-listener-test-" + uuid.New().String(),
+		Database: "dionysos_listener_test_" + strings.ReplaceAll(uuid.New().String(), "-", "_"),
 	}
 	lst := listener.NewListener(listener.Configuration{
 		APILogErrors: false,
@@ -162,7 +161,7 @@ func initTest(t testing.TB) (http.Handler, *sql.DB) {
 		t.Fatal(err)
 	}
 
-	return handler, db
+	return handler, db, containerCfg
 }
 
 func generateItems(number int) []dionysos.Item {
