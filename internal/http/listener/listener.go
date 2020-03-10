@@ -57,13 +57,17 @@ func (l Listener) Load() (http.Handler, error) {
 
 func (l Listener) initDatabase() (*sql.DB, error) {
 	dbCfg := l.Configuration.Database
+	extentions := l.Configuration.Database.RequiredExtentions
+	if nil == extentions {
+		extentions = make([]string, 0)
+	}
 	db, err := postgres.New(postgres.Configuration{
 		Address:            dbCfg.Address,
 		Port:               dbCfg.Port,
 		User:               dbCfg.User,
 		Password:           dbCfg.Password,
 		Database:           dbCfg.Database,
-		RequiredExtentions: append(l.Configuration.Database.RequiredExtentions, database.Extentions()...),
+		RequiredExtentions: append(extentions, database.Extentions()...),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("creating database connection failed: %w", err)
