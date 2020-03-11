@@ -9,27 +9,24 @@ import (
 	"testing"
 )
 
-func FromJSONBody(t testing.TB, response *httptest.ResponseRecorder, v interface{}) {
-	bodyBytes, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if err := json.Unmarshal(bodyBytes, v); nil != err {
+func FromJSONBody(t testing.TB, response []byte, v interface{}) {
+	if err := json.Unmarshal(response, v); nil != err {
 		t.Fatal(err)
 	}
 }
 
-func HandlerErrorResponse(t testing.TB, response *httptest.ResponseRecorder) {
-	if response.Code%200 > 99 {
-		respBytes, err := ioutil.ReadAll(response.Body)
-		if err != nil {
-			t.Fatal(err)
-		}
+func ReadResponse(t testing.TB, response *httptest.ResponseRecorder) []byte {
+	respBytes, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return respBytes
+}
+
+func HandlerErrorResponse(t testing.TB, code int, response []byte) {
+	if code%200 > 99 {
 		var respErr httperror.ErrorResponse
-		if err := json.Unmarshal(respBytes, err); nil != err {
-			t.Fatal(err)
-		}
+		FromJSONBody(t, response, respErr)
 		t.Fatal(fmt.Errorf("received error response: %+v", respErr))
 	}
 }

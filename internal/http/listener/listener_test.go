@@ -36,10 +36,11 @@ func TestListener(t *testing.T) {
 			t.Run("WHEN query all items", func(t *testing.T) {
 				resp := httptest.NewRecorder()
 				lst.ServeHTTP(resp, test.Request(t, "GET", "/api/items", strings.NewReader("")))
-				test.HandlerErrorResponse(t, resp)
+				respBody := test.ReadResponse(t, resp)
+				test.HandlerErrorResponse(t, resp.Code, respBody)
 
 				var body internalhttp.CollectionResponse
-				test.FromJSONBody(t, resp, &body)
+				test.FromJSONBody(t, respBody, &body)
 
 				t.Run("THEN filter is empty", func(t *testing.T) {
 					if "" != body.Filter {
@@ -65,7 +66,11 @@ func TestListener(t *testing.T) {
 					}
 				})
 
-				respItems := body.Items.([]dionysos.Item)
+				itemArray := body.Items.([]interface{})
+				respItems := make([]dionysos.Item, len(itemArray))
+				for _, i := range itemArray {
+					respItems = append(respItems, i.(dionysos.Item))
+				}
 				t.Run("THEN a limited number of items are returned", func(t *testing.T) {
 					expected := len(items)
 					if api.DefaultLimit < expected {
@@ -81,10 +86,11 @@ func TestListener(t *testing.T) {
 				filter := "aaa"
 				resp := httptest.NewRecorder()
 				lst.ServeHTTP(resp, test.Request(t, "GET", "/api/items?filter="+filter, strings.NewReader("")))
-				test.HandlerErrorResponse(t, resp)
+				respBody := test.ReadResponse(t, resp)
+				test.HandlerErrorResponse(t, resp.Code, respBody)
 
 				var body internalhttp.CollectionResponse
-				test.FromJSONBody(t, resp, &body)
+				test.FromJSONBody(t, respBody, &body)
 
 				t.Run("THEN filter is equal to requested filter", func(t *testing.T) {
 					if "" != body.Filter {
@@ -116,7 +122,11 @@ func TestListener(t *testing.T) {
 					}
 				})
 
-				respItems := body.Items.([]dionysos.Item)
+				itemArray := body.Items.([]interface{})
+				respItems := make([]dionysos.Item, len(itemArray))
+				for _, i := range itemArray {
+					respItems = append(respItems, i.(dionysos.Item))
+				}
 				t.Run("THEN a limited number of items are returned", func(t *testing.T) {
 					expected := len(items)
 					if api.DefaultLimit < expected {
