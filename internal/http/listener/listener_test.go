@@ -27,10 +27,12 @@ func TestListener(t *testing.T) {
 	defer postgres.Test_RemoveContainer(t, containerCfg.Identifier)
 	t.Run("GIVEN items exists", func(t *testing.T) {
 		items := generateItems(100)
-		err := (&database.ItemDAO{Querier: db}).InsertAll(items)
+		dao := &database.ItemDAO{Querier: db}
+		err := dao.InsertAll(items)
 		if err != nil {
 			t.Fatal(err)
 		}
+		defer test.Clear(t, []test.Clearer{dao})
 
 		t.Run("WHEN query all items", func(t *testing.T) {
 			resp := httptest.NewRecorder()

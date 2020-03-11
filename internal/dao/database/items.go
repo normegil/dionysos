@@ -81,6 +81,13 @@ func (dao ItemDAO) Delete(itemID fmt.Stringer) error {
 	return nil
 }
 
+func (dao ItemDAO) Clear() error {
+	if _, err := dao.Querier.Exec("DELETE FROM item"); nil != err {
+		return fmt.Errorf("cleearing table item: %w", err)
+	}
+	return nil
+}
+
 func (dao ItemDAO) Search(params model.SearchParameters) (*model.SearchResult, error) {
 	query := `SELECT searchIndex.id, searchIndex.name
 				FROM (
