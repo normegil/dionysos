@@ -2,11 +2,11 @@ package listener_test
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/normegil/dionysos"
 	"github.com/normegil/dionysos/internal/dao/database"
-	internalhttp "github.com/normegil/dionysos/internal/http"
 	"github.com/normegil/dionysos/internal/http/api"
 	"github.com/normegil/dionysos/internal/http/listener"
 	"github.com/normegil/dionysos/internal/tools/test"
@@ -26,118 +26,113 @@ func TestListener(t *testing.T) {
 	lst, db, containerCfg := initTest(t)
 	defer postgres.Test_RemoveContainer(t, containerCfg.Identifier)
 	t.Run("GIVEN items exists", func(t *testing.T) {
-		test.Transaction(t, db, func(tx *sql.Tx) {
-			items := generateItems(100)
-			err := (&database.ItemDAO{Querier: tx}).InsertAll(items)
-			if err != nil {
+		items := generateItems(100)
+		err := (&database.ItemDAO{Querier: db}).InsertAll(items)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		t.Run("WHEN query all items", func(t *testing.T) {
+			resp := httptest.NewRecorder()
+			lst.ServeHTTP(resp, test.Request(t, "GET", "/api/items", strings.NewReader("")))
+			respBody := test.ReadResponse(t, resp)
+			test.HandlerErrorResponse(t, resp.Code, respBody)
+
+			var body CollectionResponse
+			test.FromJSONBody(t, respBody, &body)
+
+			t.Run("THEN filter is empty", func(t *testing.T) {
+				if "" != body.Filter {
+					t.Errorf("{expected:%s;got:%s}", "", body.Filter)
+				}
+			})
+
+			t.Run("THEN collection offset is the starting offset", func(t *testing.T) {
+				if body.Offset != 0 {
+					t.Errorf("{expected:%d;got:%d}", 0, body.Offset)
+				}
+			})
+
+			t.Run("THEN collection limit is the default", func(t *testing.T) {
+				if body.Limit != api.DefaultLimit {
+					t.Errorf("{expected:%d;got:%d}", api.DefaultLimit, body.Limit)
+				}
+			})
+
+			t.Run("THEN number of items is the total number of items", func(t *testing.T) {
+				if len(items) != body.NumberOfItems {
+					t.Errorf("{expected:%d;got:%d}", len(items), body.NumberOfItems)
+				}
+			})
+
+			var respItems []dionysos.Item
+			if err := json.Unmarshal(body.Items, &respItems); nil != err {
 				t.Fatal(err)
 			}
-
-			t.Run("WHEN query all items", func(t *testing.T) {
-				resp := httptest.NewRecorder()
-				lst.ServeHTTP(resp, test.Request(t, "GET", "/api/items", strings.NewReader("")))
-				respBody := test.ReadResponse(t, resp)
-				test.HandlerErrorResponse(t, resp.Code, respBody)
-
-				var body internalhttp.CollectionResponse
-				test.FromJSONBody(t, respBody, &body)
-
-				t.Run("THEN filter is empty", func(t *testing.T) {
-					if "" != body.Filter {
-						t.Errorf("{expected:%s;got:%s}", "", body.Filter)
-					}
-				})
-
-				t.Run("THEN collection offset is the starting offset", func(t *testing.T) {
-					if body.Offset != 0 {
-						t.Errorf("{expected:%d;got:%d}", 0, body.Offset)
-					}
-				})
-
-				t.Run("THEN collection limit is the default", func(t *testing.T) {
-					if body.Limit != api.DefaultLimit {
-						t.Errorf("{expected:%d;got:%d}", api.DefaultLimit, body.Limit)
-					}
-				})
-
-				t.Run("THEN number of items is the total number of items", func(t *testing.T) {
-					if len(items) == body.NumberOfItems {
-						t.Errorf("{expected:%d;got:%d}", len(items), body.NumberOfItems)
-					}
-				})
-
-				itemArray := body.Items.([]interface{})
-				respItems := make([]dionysos.Item, len(itemArray))
-				for _, i := range itemArray {
-					respItems = append(respItems, i.(dionysos.Item))
+			t.Run("THEN a limited number of items are returned", func(t *testing.T) {
+				expected := len(items)
+				if api.DefaultLimit < expected {
+					expected = api.DefaultLimit
 				}
-				t.Run("THEN a limited number of items are returned", func(t *testing.T) {
-					expected := len(items)
-					if api.DefaultLimit < expected {
-						expected = api.DefaultLimit
-					}
-					if len(respItems) != expected {
-						t.Errorf("{expected:%d;got:%d}", len(items), len(respItems))
-					}
-				})
+				if len(respItems) != expected {
+					t.Errorf("{expected:%d;got:%d}", len(items), len(respItems))
+				}
+			})
+		})
+
+		t.Run("WHEN query filtered items", func(t *testing.T) {
+			filter := "aaa"
+			resp := httptest.NewRecorder()
+			lst.ServeHTTP(resp, test.Request(t, "GET", "/api/items?filter="+filter, strings.NewReader("")))
+			respBody := test.ReadResponse(t, resp)
+			test.HandlerErrorResponse(t, resp.Code, respBody)
+
+			var body CollectionResponse
+			test.FromJSONBody(t, respBody, &body)
+
+			t.Run("THEN filter is equal to requested filter", func(t *testing.T) {
+				if filter != body.Filter {
+					t.Errorf("{expected:%s;got:%s}", filter, body.Filter)
+				}
 			})
 
-			t.Run("WHEN query filtered items", func(t *testing.T) {
-				filter := "aaa"
-				resp := httptest.NewRecorder()
-				lst.ServeHTTP(resp, test.Request(t, "GET", "/api/items?filter="+filter, strings.NewReader("")))
-				respBody := test.ReadResponse(t, resp)
-				test.HandlerErrorResponse(t, resp.Code, respBody)
-
-				var body internalhttp.CollectionResponse
-				test.FromJSONBody(t, respBody, &body)
-
-				t.Run("THEN filter is equal to requested filter", func(t *testing.T) {
-					if "" != body.Filter {
-						t.Errorf("{expected:%s;got:%s}", filter, body.Filter)
-					}
-				})
-
-				t.Run("THEN collection offset is the starting offset", func(t *testing.T) {
-					if body.Offset != 0 {
-						t.Errorf("{expected:%d;got:%d}", 0, body.Offset)
-					}
-				})
-
-				t.Run("THEN collection limit is the default", func(t *testing.T) {
-					if body.Limit != api.DefaultLimit {
-						t.Errorf("{expected:%d;got:%d}", api.DefaultLimit, body.Limit)
-					}
-				})
-
-				filteredItems := make([]dionysos.Item, 0)
-				for _, item := range items {
-					if strings.Contains(item.Name, filter) {
-						filteredItems = append(filteredItems, item)
-					}
+			t.Run("THEN collection offset is the starting offset", func(t *testing.T) {
+				if body.Offset != 0 {
+					t.Errorf("{expected:%d;got:%d}", 0, body.Offset)
 				}
-				t.Run("THEN number of items is the total number of filtered items", func(t *testing.T) {
-					if len(filteredItems) != body.NumberOfItems {
-						t.Errorf("{expected:%d;got:%d}", len(items), body.NumberOfItems)
-					}
-				})
-
-				itemArray := body.Items.([]interface{})
-				respItems := make([]dionysos.Item, len(itemArray))
-				for _, i := range itemArray {
-					respItems = append(respItems, i.(dionysos.Item))
-				}
-				t.Run("THEN a limited number of items are returned", func(t *testing.T) {
-					expected := len(items)
-					if api.DefaultLimit < expected {
-						expected = api.DefaultLimit
-					}
-					if len(respItems) != expected {
-						t.Errorf("{expected:%d;got:%d}", len(items), len(respItems))
-					}
-				})
 			})
 
+			t.Run("THEN collection limit is the default", func(t *testing.T) {
+				if body.Limit != api.DefaultLimit {
+					t.Errorf("{expected:%d;got:%d}", api.DefaultLimit, body.Limit)
+				}
+			})
+
+			filteredItems := make([]dionysos.Item, 0)
+			for _, item := range items {
+				if strings.Contains(item.Name, filter) {
+					filteredItems = append(filteredItems, item)
+				}
+			}
+			t.Run("THEN number of items is the total number of filtered items", func(t *testing.T) {
+				if len(filteredItems) != body.NumberOfItems {
+					t.Errorf("{expected:%d;got:%d}", len(items), body.NumberOfItems)
+				}
+			})
+
+			var respItems []dionysos.Item
+			if err := json.Unmarshal(body.Items, &respItems); nil != err {
+				t.Fatal(err)
+			}
+			t.Run("THEN a limited number of items are returned", func(t *testing.T) {
+				expected := len(filteredItems)
+				if api.DefaultLimit < expected {
+					expected = api.DefaultLimit
+				}
+				if len(respItems) != expected {
+					t.Errorf("{expected:%d;got:%d}", expected, len(respItems))
+				}
+			})
 		})
 	})
 }
@@ -189,4 +184,12 @@ func generateItems(number int) []dionysos.Item {
 		})
 	}
 	return items
+}
+
+type CollectionResponse struct {
+	Offset        int             `json:"offset"`
+	Limit         int             `json:"limit"`
+	Filter        string          `json:"filter"`
+	NumberOfItems int             `json:"totalSize"`
+	Items         json.RawMessage `json:"items"`
 }
