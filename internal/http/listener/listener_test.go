@@ -18,6 +18,7 @@ import (
 	"testing"
 )
 
+//nolint:funlen,gocognit
 func TestListener(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping test")

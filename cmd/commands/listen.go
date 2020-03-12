@@ -2,7 +2,6 @@ package commands
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"github.com/brianvoe/gofakeit"
 	"github.com/normegil/dionysos"
@@ -108,7 +107,6 @@ func listenRun(_ *cobra.Command, _ []string) {
 		if err = insertDummyData(db); nil != err {
 			log.Fatal().Err(err).Msg("inserting dummy data")
 		}
-
 	}
 
 	addr := net.TCPAddr{
@@ -139,7 +137,7 @@ func getDatabaseConfiguration() postgres.Configuration {
 	}
 }
 
-func insertDummyData(db *sql.DB) error {
+func insertDummyData(db database.Querier) error {
 	storageDAO := &database.StorageDAO{Querier: db}
 	itemDAO := &database.ItemDAO{Querier: db}
 	userDAO := &database.UserDAO{Querier: db}

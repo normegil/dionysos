@@ -85,7 +85,7 @@ func (l Listener) initDatabase() (*sql.DB, error) {
 	return db, nil
 }
 
-func (l Listener) loadServerHandler(db *sql.DB) http.Handler {
+func (l Listener) loadServerHandler(db database.Querier) http.Handler {
 	sessionManager := scs.New()
 	router := internalHTTP.NewRouter(l.route(db))
 	sessionHandler := securitymiddleware.SessionHandler{
@@ -100,7 +100,7 @@ func (l Listener) loadServerHandler(db *sql.DB) http.Handler {
 	return handler
 }
 
-func (l Listener) route(db *sql.DB) map[string]http.Handler {
+func (l Listener) route(db database.Querier) map[string]http.Handler {
 	itemDAO := &database.ItemDAO{Querier: db}
 	storageDAO := &database.StorageDAO{Querier: db}
 	casbinDAO := &database.CasbinDAO{
