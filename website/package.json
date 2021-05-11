@@ -15,7 +15,7 @@
   "dependencies": {
     "axios": "^0.19.1",
     "line-awesome": "^1.3.0",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.21",
     "typeface-rokkitt": "^1.1.3",
     "typeface-ubuntu-mono": "0.0.72",
     "vue": "^2.6.11",
