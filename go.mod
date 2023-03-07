@@ -7,11 +7,10 @@ require (
 	github.com/alexedwards/scs/v2 v2.2.0
 	github.com/brianvoe/gofakeit v3.18.0+incompatible
 	github.com/casbin/casbin v1.9.1
-	github.com/docker/distribution v2.7.1+incompatible // indirect
+	github.com/docker/distribution v2.8.0+incompatible // indirect
 	github.com/docker/go-units v0.4.0 // indirect
 	github.com/go-chi/chi v4.0.2+incompatible
 	github.com/google/uuid v1.1.1
-	github.com/lib/pq v1.3.0
 	github.com/markbates/pkger v0.13.0
 	github.com/normegil/postgres v0.0.0-20200310214905-1795c39f26e2
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
